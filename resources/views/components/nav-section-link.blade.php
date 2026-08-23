@@ -8,7 +8,7 @@
    ])
 >
     @isset($icon)
-        <svg class="h-4.5 w-4.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             {{ $icon }}
         </svg>
     @endisset
