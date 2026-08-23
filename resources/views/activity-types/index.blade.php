@@ -49,18 +49,22 @@
                             <x-modal name="edit-type-{{ $type->id }}" max-width="md">
                                 <form method="POST" action="{{ route('activity-types.update', $type) }}" class="p-6">
                                     @csrf @method('PUT')
+                                    <input type="hidden" name="editing_type_id" value="{{ $type->id }}">
                                     <h3 class="mb-4 text-lg font-semibold text-slate-800">Chỉnh sửa loại hoạt động</h3>
                                     <div class="space-y-4">
                                         <div>
                                             <x-input-label value="Tên loại hoạt động *" />
-                                            <x-text-input name="name" class="mt-1 block w-full" value="{{ $type->name }}" required />
+                                            <x-text-input name="name" class="mt-1 block w-full" value="{{ old('editing_type_id') == $type->id ? old('name') : $type->name }}" required />
+                                            @if(old('editing_type_id') == $type->id)
+                                                <x-input-error :messages="$errors->get('name')" class="mt-1" />
+                                            @endif
                                         </div>
                                         <div>
                                             <x-input-label value="Mô tả" />
-                                            <textarea name="description" rows="3" class="mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ $type->description }}</textarea>
+                                            <textarea name="description" rows="3" class="mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('editing_type_id') == $type->id ? old('description') : $type->description }}</textarea>
                                         </div>
                                         <label class="flex items-center gap-2 text-sm">
-                                            <input type="checkbox" name="is_active" value="1" @checked($type->is_active) class="rounded border-slate-300 text-blue-600">
+                                            <input type="checkbox" name="is_active" value="1" @checked(old('editing_type_id') == $type->id ? old('is_active') : $type->is_active) class="rounded border-slate-300 text-blue-600">
                                             Kích hoạt loại hoạt động này
                                         </label>
                                     </div>
@@ -78,6 +82,8 @@
         @endif
     </x-card>
 
+    @php($isCreateError = $errors->any() && ! old('editing_type_id'))
+
     <x-modal name="create-type" max-width="md">
         <form method="POST" action="{{ route('activity-types.store') }}" class="p-6">
             @csrf
@@ -85,14 +91,17 @@
             <div class="space-y-4">
                 <div>
                     <x-input-label value="Tên loại hoạt động *" />
-                    <x-text-input name="name" class="mt-1 block w-full" required />
+                    <x-text-input name="name" class="mt-1 block w-full" value="{{ old('name') }}" required />
+                    @if($isCreateError)
+                        <x-input-error :messages="$errors->get('name')" class="mt-1" />
+                    @endif
                 </div>
                 <div>
                     <x-input-label value="Mô tả" />
-                    <textarea name="description" rows="3" class="mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                    <textarea name="description" rows="3" class="mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('description') }}</textarea>
                 </div>
                 <label class="flex items-center gap-2 text-sm">
-                    <input type="checkbox" name="is_active" value="1" checked class="rounded border-slate-300 text-blue-600">
+                    <input type="checkbox" name="is_active" value="1" @checked(old('is_active', true)) class="rounded border-slate-300 text-blue-600">
                     Kích hoạt loại hoạt động này
                 </label>
             </div>
@@ -102,4 +111,14 @@
             </div>
         </form>
     </x-modal>
+
+    @if($errors->any())
+        <script>
+            window.addEventListener('DOMContentLoaded', () => {
+                window.dispatchEvent(new CustomEvent('open-modal', {
+                    detail: @json(old('editing_type_id') ? 'edit-type-'.old('editing_type_id') : 'create-type'),
+                }));
+            });
+        </script>
+    @endif
 </x-app-layout>
