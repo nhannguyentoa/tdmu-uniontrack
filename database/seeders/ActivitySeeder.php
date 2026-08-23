@@ -21,7 +21,7 @@ class ActivitySeeder extends Seeder
         foreach ($groups as $group) {
             $officer = $group->officers()->first();
 
-            foreach (range(1, fake()->numberBetween(4, 7)) as $i) {
+            foreach (range(1, fake()->numberBetween(3, 5)) as $i) {
                 $state = fake()->randomElement($states);
 
                 $activity = Activity::factory()->{$state}()->create([
@@ -40,7 +40,7 @@ class ActivitySeeder extends Seeder
                 ]);
 
                 $members = $group->members()->where('status', 'active')->inRandomOrder()
-                    ->limit(fake()->numberBetween(3, min(10, max(3, $group->members()->count()))))
+                    ->limit(fake()->numberBetween(2, min(5, max(2, $group->members()->count()))))
                     ->get();
 
                 foreach ($members as $member) {

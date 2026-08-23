@@ -15,7 +15,7 @@ class MemberSeeder extends Seeder
 
         foreach ($groups as $group) {
             Member::factory()
-                ->count(fake()->numberBetween(8, 15))
+                ->count(fake()->numberBetween(5, 8))
                 ->create(['union_group_id' => $group->id]);
         }
 
