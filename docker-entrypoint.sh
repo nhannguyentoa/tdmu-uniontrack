@@ -6,8 +6,11 @@ echo "== TDMU UnionTrack: khoi dong container =="
 php artisan config:clear
 php artisan package:discover --ansi
 
-echo "-- Chay migrate:fresh --seed (reset ve du lieu mau moi lan khoi dong, do goi mien phi khong luu tru lau dai) --"
-php artisan migrate:fresh --seed --force
+echo "-- Chay migrate (chi ap dung migration con thieu, khong xoa du lieu) --"
+php artisan migrate --force
+
+echo "-- Seed du lieu mau neu database dang trong (chi chay 1 lan duy nhat) --"
+php artisan app:seed-once
 
 php artisan storage:link || true
 

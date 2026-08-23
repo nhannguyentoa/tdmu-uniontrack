@@ -51,8 +51,8 @@ git push -u origin main
 ## Lưu ý quan trọng về giới hạn gói miễn phí
 
 - **Web service "ngủ" sau 15 phút không có ai truy cập** — lần mở lại đầu tiên sẽ mất khoảng 30-50 giây để "thức dậy", sau đó chạy bình thường.
-- **Dữ liệu reset về mẫu ban đầu mỗi khi container khởi động lại** (kể cả sau khi "ngủ dậy" hoặc mỗi lần bạn deploy lại) — vì gói free của Render không có ổ đĩa lưu trữ lâu dài, nên `docker-entrypoint.sh` chủ động chạy `migrate:fresh --seed` mỗi lần khởi động để đảm bảo demo luôn có dữ liệu sạch, thay vì bị lỗi do dữ liệu cũ không đồng bộ. Điều này có nghĩa: **ảnh/minh chứng bạn upload sẽ mất khi container khởi động lại** — chỉ phù hợp để demo/chấm điểm, không dùng để lưu dữ liệu thật lâu dài.
-- Muốn dữ liệu lưu bền vững thật sự, cần nâng cấp lên gói trả phí có Persistent Disk, hoặc lưu file upload qua dịch vụ ngoài (S3/Cloudinary) — ngoài phạm vi bản demo miễn phí này.
+- **Database (MySQL trên Clever Cloud) lưu trữ bền vững thật sự** — dữ liệu bạn thêm/sửa/xóa qua giao diện web sẽ không mất khi container khởi động lại. `docker-entrypoint.sh` chỉ chạy `migrate` (áp dụng migration còn thiếu) và seed dữ liệu mẫu **đúng 1 lần** lúc database còn trống, không xóa dữ liệu đã có ở các lần khởi động sau.
+- **Ảnh/minh chứng upload thì vẫn bị mất khi container khởi động lại** — vì chúng lưu trên ổ đĩa của container (ephemeral), không phải trên Clever Cloud. Muốn lưu file bền vững cần đấu nối dịch vụ lưu trữ ngoài (S3/Cloudinary) — ngoài phạm vi bản demo miễn phí này.
 
 ## Cập nhật code sau này
 
