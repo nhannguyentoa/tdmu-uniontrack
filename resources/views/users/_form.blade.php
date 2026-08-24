@@ -17,13 +17,13 @@
 
     <div>
         <x-input-label for="password" :value="$u ? 'Mật khẩu mới (để trống nếu không đổi)' : 'Mật khẩu *'" />
-        <x-text-input id="password" name="password" type="password" class="mt-1 block w-full" {{ $u ? '' : 'required' }} />
+        <x-text-input id="password" name="password" type="password" class="mt-1 block w-full" :required="! $u" />
         <x-input-error :messages="$errors->get('password')" class="mt-1" />
     </div>
 
     <div>
         <x-input-label for="password_confirmation" value="Xác nhận mật khẩu" />
-        <x-text-input id="password_confirmation" name="password_confirmation" type="password" class="mt-1 block w-full" {{ $u ? '' : 'required' }} />
+        <x-text-input id="password_confirmation" name="password_confirmation" type="password" class="mt-1 block w-full" :required="! $u" />
     </div>
 
     <div>
