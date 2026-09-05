@@ -35,6 +35,11 @@ class UpdateActivityRequest extends FormRequest
             'progress' => ['required', 'integer', 'min:0', 'max:100'],
             'budget' => ['nullable', 'numeric', 'min:0'],
             'note' => ['nullable', 'string'],
+            'collaborating_groups' => ['nullable', 'array'],
+            'collaborating_groups.phoi_hop' => ['nullable', 'array'],
+            'collaborating_groups.phoi_hop.*' => ['exists:union_groups,id'],
+            'collaborating_groups.tham_gia' => ['nullable', 'array'],
+            'collaborating_groups.tham_gia.*' => ['exists:union_groups,id'],
         ];
     }
 
@@ -69,6 +74,24 @@ class UpdateActivityRequest extends FormRequest
             if ($user->isOfficer() && $this->union_group_id && ! $user->managesUnionGroup((int) $this->union_group_id)) {
                 $validator->errors()->add('union_group_id', 'Bạn không được phép chuyển hoạt động sang tổ công đoàn khác.');
             }
+
+            $this->validateCollaboratingGroups($validator);
         });
+    }
+
+    protected function validateCollaboratingGroups(Validator $validator): void
+    {
+        $phoiHop = $this->input('collaborating_groups.phoi_hop', []);
+        $thamGia = $this->input('collaborating_groups.tham_gia', []);
+        $primary = (int) $this->union_group_id;
+
+        if (in_array($primary, array_map('intval', array_merge($phoiHop, $thamGia)), true)) {
+            $validator->errors()->add('collaborating_groups', 'Tổ chủ trì không thể đồng thời là tổ phối hợp/tham gia.');
+        }
+
+        $overlap = array_intersect(array_map('intval', $phoiHop), array_map('intval', $thamGia));
+        if (! empty($overlap)) {
+            $validator->errors()->add('collaborating_groups', 'Một tổ không thể vừa là tổ phối hợp vừa là tổ tham gia.');
+        }
     }
 }

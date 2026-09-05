@@ -71,18 +71,29 @@ class ActivityController extends Controller
         $unionGroups = $request->user()->isOfficer()
             ? $request->user()->managedUnionGroups()->orderBy('name')->get()
             : UnionGroup::orderBy('name')->get();
+        $allUnionGroups = UnionGroup::orderBy('name')->get();
         $activityTypes = ActivityType::where('is_active', true)->orderBy('name')->get();
         $users = User::whereIn('role', ['admin', 'officer'])->orderBy('name')->get();
 
-        return view('activities.create', compact('unionGroups', 'activityTypes', 'users'));
+        return view('activities.create', compact('unionGroups', 'allUnionGroups', 'activityTypes', 'users'));
     }
 
     public function store(StoreActivityRequest $request): RedirectResponse
     {
         $data = $request->validated();
+        $collaboratingGroups = $data['collaborating_groups'] ?? [];
+        $fromActivityPlanId = $data['from_activity_plan_id'] ?? null;
+        unset($data['collaborating_groups'], $data['from_activity_plan_id']);
         $data['created_by'] = $request->user()->id;
 
         $activity = Activity::create($data);
+        $this->syncCollaboratingGroups($activity, $collaboratingGroups);
+
+        if ($fromActivityPlanId) {
+            \App\Models\ActivityPlan::whereKey($fromActivityPlanId)
+                ->whereNull('activity_id')
+                ->update(['activity_id' => $activity->id, 'status' => \App\Models\ActivityPlan::STATUS_DONE]);
+        }
 
         $activity->statusHistories()->create([
             'status' => $activity->status,
@@ -98,7 +109,7 @@ class ActivityController extends Controller
     {
         $this->authorize('view', $activity);
 
-        $activity->load(['unionGroup', 'activityType', 'responsibleUser', 'creator', 'statusHistories.changer']);
+        $activity->load(['unionGroup', 'activityType', 'responsibleUser', 'creator', 'statusHistories.changer', 'collaboratingGroups']);
 
         $participants = $activity->participants()->with('member')->latest()->paginate(10, ['*'], 'participants_page');
         $evidences = $activity->evidences()->with('uploader')->latest()->get();
@@ -113,20 +124,25 @@ class ActivityController extends Controller
         $unionGroups = $request->user()->isOfficer()
             ? $request->user()->managedUnionGroups()->orderBy('name')->get()
             : UnionGroup::orderBy('name')->get();
+        $allUnionGroups = UnionGroup::orderBy('name')->get();
         $activityTypes = ActivityType::where('is_active', true)->orderBy('name')->get();
         $users = User::whereIn('role', ['admin', 'officer'])->orderBy('name')->get();
+        $activity->load('collaboratingGroups');
 
-        return view('activities.edit', compact('activity', 'unionGroups', 'activityTypes', 'users'));
+        return view('activities.edit', compact('activity', 'unionGroups', 'allUnionGroups', 'activityTypes', 'users'));
     }
 
     public function update(UpdateActivityRequest $request, Activity $activity): RedirectResponse
     {
         $data = $request->validated();
+        $collaboratingGroups = $data['collaborating_groups'] ?? [];
+        unset($data['collaborating_groups']);
         $data['updated_by'] = $request->user()->id;
 
         $statusChanged = $activity->status !== $data['status'] || (int) $activity->progress !== (int) $data['progress'];
 
         $activity->update($data);
+        $this->syncCollaboratingGroups($activity, $collaboratingGroups);
 
         if ($statusChanged) {
             $activity->statusHistories()->create([
@@ -151,5 +167,20 @@ class ActivityController extends Controller
         $activity->delete();
 
         return redirect()->route('activities.index')->with('success', 'Đã xóa hoạt động thành công.');
+    }
+
+    protected function syncCollaboratingGroups(Activity $activity, array $collaboratingGroups): void
+    {
+        $sync = [];
+
+        foreach ($collaboratingGroups['phoi_hop'] ?? [] as $unionGroupId) {
+            $sync[$unionGroupId] = ['role' => Activity::ROLE_PHOI_HOP];
+        }
+
+        foreach ($collaboratingGroups['tham_gia'] ?? [] as $unionGroupId) {
+            $sync[$unionGroupId] = ['role' => Activity::ROLE_THAM_GIA];
+        }
+
+        $activity->collaboratingGroups()->sync($sync);
     }
 }

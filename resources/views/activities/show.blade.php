@@ -184,6 +184,23 @@
                 <x-btn href="{{ route('union-groups.show', $activity->unionGroup) }}" variant="ghost" class="mt-3 !px-0">Xem chi tiết tổ →</x-btn>
             </x-card>
 
+            @if($activity->collaboratingGroups->isNotEmpty())
+                <x-card title="Đơn vị phối hợp">
+                    <ul class="space-y-2 text-sm">
+                        @foreach($activity->collaboratingGroups as $group)
+                            <li class="flex items-center justify-between gap-2">
+                                <a href="{{ route('union-groups.show', $group) }}" class="font-medium text-blue-600 hover:underline">{{ $group->name }}</a>
+                                <span @class([
+                                    'inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-xs font-medium',
+                                    'bg-blue-100 text-blue-700' => $group->pivot->role === 'phoi_hop',
+                                    'bg-slate-100 text-slate-600' => $group->pivot->role === 'tham_gia',
+                                ])>{{ \App\Models\Activity::COLLABORATION_ROLES[$group->pivot->role] ?? $group->pivot->role }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                </x-card>
+            @endif
+
             <x-card title="Thống kê tham gia">
                 @php
                     $total = $activity->participants()->count();

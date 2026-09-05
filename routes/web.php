@@ -3,8 +3,11 @@
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\ActivityEvidenceController;
 use App\Http\Controllers\ActivityParticipantController;
+use App\Http\Controllers\ActivityPlanController;
 use App\Http\Controllers\ActivityTypeController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EvaluationCriterionController;
+use App\Http\Controllers\EvaluationScoreController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
@@ -67,6 +70,27 @@ Route::middleware('auth')->group(function () {
     Route::post('activities/{activity}/evidences', [ActivityEvidenceController::class, 'store'])->name('activities.evidences.store');
     Route::get('activities/{activity}/evidences/{evidence}/download', [ActivityEvidenceController::class, 'download'])->name('activities.evidences.download');
     Route::delete('activities/{activity}/evidences/{evidence}', [ActivityEvidenceController::class, 'destroy'])->name('activities.evidences.destroy');
+
+    // Kế hoạch hoạt động năm học
+    Route::get('activity-plans', [ActivityPlanController::class, 'index'])->name('activity-plans.index');
+    Route::get('activity-plans/create', [ActivityPlanController::class, 'create'])->name('activity-plans.create');
+    Route::post('activity-plans', [ActivityPlanController::class, 'store'])->name('activity-plans.store');
+    Route::get('activity-plans/{activity_plan}/edit', [ActivityPlanController::class, 'edit'])->name('activity-plans.edit');
+    Route::put('activity-plans/{activity_plan}', [ActivityPlanController::class, 'update'])->name('activity-plans.update');
+    Route::delete('activity-plans/{activity_plan}', [ActivityPlanController::class, 'destroy'])->name('activity-plans.destroy');
+
+    // Chấm điểm thi đua
+    Route::get('evaluation/criteria', [EvaluationCriterionController::class, 'index'])->name('evaluation-criteria.index');
+    Route::post('evaluation/criteria', [EvaluationCriterionController::class, 'store'])->name('evaluation-criteria.store');
+    Route::put('evaluation/criteria/{evaluation_criterion}', [EvaluationCriterionController::class, 'update'])->name('evaluation-criteria.update');
+    Route::delete('evaluation/criteria/{evaluation_criterion}', [EvaluationCriterionController::class, 'destroy'])->name('evaluation-criteria.destroy');
+
+    Route::get('evaluation/report', [EvaluationScoreController::class, 'report'])->name('evaluation.report');
+    Route::get('evaluation/report/export', [EvaluationScoreController::class, 'exportExcel'])->name('evaluation.report.export');
+    Route::get('evaluation/verify', [EvaluationScoreController::class, 'editVerify'])->name('evaluation.verify.edit');
+    Route::put('evaluation/verify', [EvaluationScoreController::class, 'updateVerify'])->name('evaluation.verify.update');
+    Route::get('evaluation/{union_group}/self', [EvaluationScoreController::class, 'editSelf'])->name('evaluation.self.edit');
+    Route::put('evaluation/{union_group}/self', [EvaluationScoreController::class, 'updateSelf'])->name('evaluation.self.update');
 
     // Báo cáo & thống kê
     Route::get('reports', [ReportController::class, 'month'])->name('reports.index');

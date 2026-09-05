@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
@@ -42,6 +43,14 @@ class Activity extends Model
         self::STATUS_IN_PROGRESS => 'warning',
         self::STATUS_COMPLETED => 'success',
         self::STATUS_CANCELLED => 'danger',
+    ];
+
+    public const ROLE_PHOI_HOP = 'phoi_hop';
+    public const ROLE_THAM_GIA = 'tham_gia';
+
+    public const COLLABORATION_ROLES = [
+        self::ROLE_PHOI_HOP => 'Phối hợp tổ chức',
+        self::ROLE_THAM_GIA => 'Tham gia',
     ];
 
     protected function casts(): array
@@ -88,6 +97,21 @@ class Activity extends Model
     public function evidences(): HasMany
     {
         return $this->hasMany(ActivityEvidence::class);
+    }
+
+    /**
+     * Các tổ công đoàn phối hợp/tham gia (ngoài tổ chủ trì ở union_group_id).
+     */
+    public function collaboratingGroups(): BelongsToMany
+    {
+        return $this->belongsToMany(UnionGroup::class, 'activity_union_groups')
+            ->withPivot(['role', 'note'])
+            ->withTimestamps();
+    }
+
+    public function plan(): HasOne
+    {
+        return $this->hasOne(ActivityPlan::class);
     }
 
     public function statusHistories(): HasMany

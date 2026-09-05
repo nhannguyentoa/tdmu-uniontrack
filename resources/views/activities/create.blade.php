@@ -2,6 +2,9 @@
     <x-card title="Thêm hoạt động công đoàn">
         <form method="POST" action="{{ route('activities.store') }}">
             @csrf
+            @if(request('from_activity_plan_id'))
+                <input type="hidden" name="from_activity_plan_id" value="{{ request('from_activity_plan_id') }}">
+            @endif
             @include('activities._form', ['activity' => null])
 
             <div class="mt-6 flex justify-end gap-3">

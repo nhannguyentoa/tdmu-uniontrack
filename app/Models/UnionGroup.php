@@ -43,4 +43,24 @@ class UnionGroup extends Model
     {
         return $this->members()->where('status', 'active');
     }
+
+    /**
+     * Các hoạt động do tổ khác chủ trì mà tổ này phối hợp/tham gia.
+     */
+    public function collaboratingActivities(): BelongsToMany
+    {
+        return $this->belongsToMany(Activity::class, 'activity_union_groups')
+            ->withPivot(['role', 'note'])
+            ->withTimestamps();
+    }
+
+    public function evaluationScores(): HasMany
+    {
+        return $this->hasMany(EvaluationScore::class);
+    }
+
+    public function activityPlans(): HasMany
+    {
+        return $this->hasMany(ActivityPlan::class, 'host_union_group_id');
+    }
 }

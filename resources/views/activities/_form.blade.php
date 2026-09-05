@@ -11,7 +11,7 @@
 
     <div>
         <x-input-label for="name" value="Tên hoạt động *" />
-        <x-text-input id="name" name="name" class="mt-1 block w-full" :value="old('name', $a?->name)" required />
+        <x-text-input id="name" name="name" class="mt-1 block w-full" :value="old('name', $a?->name ?? request('name'))" required />
         <x-input-error :messages="$errors->get('name')" class="mt-1" />
     </div>
 
@@ -20,7 +20,7 @@
         <select id="union_group_id" name="union_group_id" class="mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
             <option value="">-- Chọn tổ công đoàn --</option>
             @foreach($unionGroups as $group)
-                <option value="{{ $group->id }}" @selected((string) old('union_group_id', $a?->union_group_id) === (string) $group->id)>{{ $group->name }}</option>
+                <option value="{{ $group->id }}" @selected((string) old('union_group_id', $a?->union_group_id ?? request('union_group_id')) === (string) $group->id)>{{ $group->name }}</option>
             @endforeach
         </select>
         <x-input-error :messages="$errors->get('union_group_id')" class="mt-1" />
@@ -122,5 +122,40 @@
         <x-input-label for="note" value="Ghi chú" />
         <textarea id="note" name="note" rows="2" class="mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('note', $a?->note) }}</textarea>
         <x-input-error :messages="$errors->get('note')" class="mt-1" />
+    </div>
+
+    @php
+        $phoiHopIds = old('collaborating_groups.phoi_hop', $a?->collaboratingGroups->where('pivot.role', 'phoi_hop')->pluck('id')->all() ?? []);
+        $thamGiaIds = old('collaborating_groups.tham_gia', $a?->collaboratingGroups->where('pivot.role', 'tham_gia')->pluck('id')->all() ?? []);
+    @endphp
+
+    <div class="sm:col-span-2">
+        <x-input-label value="Tổ phối hợp tổ chức (ngoài tổ chủ trì)" />
+        <p class="mt-0.5 text-xs text-slate-500">Các tổ cùng đứng ra tổ chức hoạt động này với tổ chủ trì.</p>
+        <div class="mt-1 grid grid-cols-2 gap-2 rounded-lg border border-slate-200 p-3 sm:grid-cols-3">
+            @foreach($allUnionGroups as $group)
+                <label class="flex items-center gap-2 text-sm">
+                    <input type="checkbox" name="collaborating_groups[phoi_hop][]" value="{{ $group->id }}"
+                           @checked(collect($phoiHopIds)->contains($group->id))
+                           class="rounded border-slate-300 text-blue-600">
+                    {{ $group->name }}
+                </label>
+            @endforeach
+        </div>
+        <x-input-error :messages="$errors->get('collaborating_groups')" class="mt-1" />
+    </div>
+
+    <div class="sm:col-span-2">
+        <x-input-label value="Tổ tham gia (không đứng ra tổ chức)" />
+        <div class="mt-1 grid grid-cols-2 gap-2 rounded-lg border border-slate-200 p-3 sm:grid-cols-3">
+            @foreach($allUnionGroups as $group)
+                <label class="flex items-center gap-2 text-sm">
+                    <input type="checkbox" name="collaborating_groups[tham_gia][]" value="{{ $group->id }}"
+                           @checked(collect($thamGiaIds)->contains($group->id))
+                           class="rounded border-slate-300 text-blue-600">
+                    {{ $group->name }}
+                </label>
+            @endforeach
+        </div>
     </div>
 </div>
