@@ -8,9 +8,11 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithTitle;
-
-class ActivitiesExport implements FromCollection, WithHeadings, WithMapping, WithTitle
-{
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+class ActivitiesExport implements FromCollection, WithHeadings, WithMapping, WithTitle, WithStyles, WithColumnWidths{
     public function __construct(protected Collection $activities)
     {
     }
@@ -45,5 +47,17 @@ class ActivitiesExport implements FromCollection, WithHeadings, WithMapping, Wit
     public function title(): string
     {
         return 'Danh sách hoạt động';
+    }
+    public function styles(Worksheet $sheet)
+    {
+        $sheet->getStyle('A1:K'.$sheet->getHighestRow())
+              ->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+        $sheet->getStyle('A1:K1')->getFont()->setBold(true);
+        return [];
+    }
+
+    public function columnWidths(): array
+    {
+        return ['B' => 30];
     }
 }
