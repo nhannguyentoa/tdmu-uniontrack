@@ -8,8 +8,13 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithTitle;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-class ActivitiesExport implements FromCollection, WithHeadings, WithMapping, WithTitle
+class ActivitiesExport implements FromCollection, WithHeadings, WithMapping, WithTitle, WithStyles, WithColumnWidths
 {
     public function __construct(protected Collection $activities)
     {
@@ -45,5 +50,30 @@ class ActivitiesExport implements FromCollection, WithHeadings, WithMapping, Wit
     public function title(): string
     {
         return 'Danh sách hoạt động';
+    }
+
+    public function styles(Worksheet $sheet)
+    {
+        $lastRow = $sheet->getHighestRow();
+
+        $sheet->getStyle("A1:K{$lastRow}")
+            ->getBorders()->getAllBorders()
+            ->setBorderStyle(Border::BORDER_THIN);
+
+        $sheet->getStyle('A1:K1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:K1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('H2:H'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('I2:K'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        return [];
+    }
+
+    public function columnWidths(): array
+    {
+        return [
+            'A' => 14, 'B' => 30, 'C' => 18, 'D' => 18,
+            'E' => 18, 'F' => 18, 'G' => 22, 'H' => 16,
+            'I' => 12, 'J' => 12, 'K' => 12,
+        ];
     }
 }
