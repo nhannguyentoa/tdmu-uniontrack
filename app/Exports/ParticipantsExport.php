@@ -8,8 +8,13 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithTitle;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-class ParticipantsExport implements FromCollection, WithHeadings, WithMapping, WithTitle
+class ParticipantsExport implements FromCollection, WithHeadings, WithMapping, WithTitle, WithStyles, WithColumnWidths
 {
     public function __construct(protected Collection $participants)
     {
@@ -40,5 +45,26 @@ class ParticipantsExport implements FromCollection, WithHeadings, WithMapping, W
     public function title(): string
     {
         return 'Người tham gia';
+    }
+
+    public function styles(Worksheet $sheet)
+    {
+        $lastRow = $sheet->getHighestRow();
+
+        $sheet->getStyle("A1:F{$lastRow}")
+            ->getBorders()->getAllBorders()
+            ->setBorderStyle(Border::BORDER_THIN);
+
+        $sheet->getStyle('A1:F1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:F1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A2:A'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('E2:F'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        return [];
+    }
+
+    public function columnWidths(): array
+    {
+        return ['A' => 14, 'B' => 26, 'C' => 20, 'D' => 24, 'E' => 16, 'F' => 18];
     }
 }
