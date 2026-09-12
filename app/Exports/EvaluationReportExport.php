@@ -26,7 +26,7 @@ class EvaluationReportExport implements FromCollection, WithHeadings, WithMappin
 
     public function headings(): array
     {
-        return ['STT', 'Tên tổ Công đoàn', 'Điểm chuẩn', 'Tổng tự chấm', 'Tổng thẩm định', 'Chênh lệch (TĐ-TC)', 'Xếp loại'];
+        return ['STT', 'Tên tổ Công đoàn', 'Điểm chuẩn', 'Tổng tự chấm', 'Trong đó điểm thưởng từ hoạt động', 'Tổng thẩm định', 'Chênh lệch (TĐ-TC)', 'Xếp loại'];
     }
 
     public function map($row): array
@@ -39,6 +39,7 @@ class EvaluationReportExport implements FromCollection, WithHeadings, WithMappin
             $row['union_group']->name,
             $row['standard_total'],
             $row['self_total'],
+            $row['activity_bonus'],
             $row['verified_total'],
             $row['diff'],
             $row['classification'],

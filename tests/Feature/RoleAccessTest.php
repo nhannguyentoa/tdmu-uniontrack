@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\Member;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -23,13 +22,6 @@ class RoleAccessTest extends TestCase
         $officer = User::factory()->officer()->create();
 
         $this->actingAs($officer)->get('/users')->assertForbidden();
-    }
-
-    public function test_member_cannot_access_user_management(): void
-    {
-        $member = User::factory()->member()->create();
-
-        $this->actingAs($member)->get('/users')->assertForbidden();
     }
 
     public function test_admin_can_create_officer_account_and_assign_group(): void
@@ -56,23 +48,9 @@ class RoleAccessTest extends TestCase
     {
         $admin = User::factory()->admin()->create();
         $officer = User::factory()->officer()->create();
-        $memberUser = User::factory()->member()->create();
 
         $this->actingAs($admin)->get('/dashboard')->assertOk()->assertSee('Tổ công đoàn');
         $this->actingAs($officer)->get('/dashboard')->assertOk();
-        $this->actingAs($memberUser)->get('/dashboard')->assertOk();
-    }
-
-    public function test_member_dashboard_shows_own_participation(): void
-    {
-        $user = User::factory()->member()->create();
-        $group = \App\Models\UnionGroup::factory()->create();
-        Member::factory()->create(['union_group_id' => $group->id, 'user_id' => $user->id]);
-
-        $response = $this->actingAs($user)->get('/dashboard');
-
-        $response->assertOk();
-        $response->assertDontSee('Tài khoản của bạn chưa được gắn với hồ sơ đoàn viên');
     }
 
     public function test_inactive_user_cannot_access_admin_only_routes(): void

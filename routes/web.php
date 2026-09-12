@@ -58,6 +58,7 @@ Route::middleware('auth')->group(function () {
     Route::get('activities/{activity}', [ActivityController::class, 'show'])->name('activities.show');
     Route::get('activities/{activity}/edit', [ActivityController::class, 'edit'])->name('activities.edit');
     Route::put('activities/{activity}', [ActivityController::class, 'update'])->name('activities.update');
+    Route::patch('activities/{activity}/quick-update', [ActivityController::class, 'quickUpdate'])->name('activities.quick-update');
     Route::delete('activities/{activity}', [ActivityController::class, 'destroy'])->name('activities.destroy');
 
     // Người tham gia hoạt động

@@ -31,6 +31,8 @@ class StoreActivityRequest extends FormRequest
             'status' => ['required', 'in:not_started,preparing,in_progress,completed,cancelled'],
             'progress' => ['required', 'integer', 'min:0', 'max:100'],
             'budget' => ['nullable', 'numeric', 'min:0'],
+            'counts_for_evaluation' => ['boolean'],
+            'evaluation_max_score' => ['nullable', 'required_if:counts_for_evaluation,1', 'numeric', 'min:0.5', 'max:50'],
             'note' => ['nullable', 'string'],
             'collaborating_groups' => ['nullable', 'array'],
             'collaborating_groups.phoi_hop' => ['nullable', 'array'],
@@ -62,6 +64,7 @@ class StoreActivityRequest extends FormRequest
             'progress.max' => 'Tiến độ phải từ 0 đến 100.',
             'budget.numeric' => 'Kinh phí phải là một số.',
             'budget.min' => 'Kinh phí không được âm.',
+            'evaluation_max_score.required_if' => 'Vui lòng nhập điểm thi đua tối đa cho hoạt động này.',
         ];
     }
 

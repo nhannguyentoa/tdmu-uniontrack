@@ -38,7 +38,6 @@
             <p class="font-medium text-slate-600">Tài khoản dùng thử:</p>
             <p>Quản trị viên: admin@tdmu.edu.vn / Admin@123</p>
             <p>Cán bộ công đoàn: officer1@tdmu.edu.vn / Officer@123</p>
-            <p>Đoàn viên: member@tdmu.edu.vn / Member@123</p>
         </div>
     </form>
 </x-guest-layout>

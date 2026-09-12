@@ -27,7 +27,7 @@ class ActivitiesExport implements FromCollection, WithHeadings, WithMapping, Wit
 
     public function headings(): array
     {
-        return ['Mã hoạt động', 'Tên hoạt động', 'Tổ công đoàn', 'Loại hoạt động', 'Thời gian bắt đầu', 'Thời gian kết thúc', 'Địa điểm', 'Trạng thái', 'Tiến độ (%)', 'SL dự kiến', 'SL thực tế'];
+        return ['Mã hoạt động', 'Tên hoạt động', 'Tổ công đoàn', 'Loại hoạt động', 'Thời gian bắt đầu', 'Thời gian kết thúc', 'Địa điểm', 'Trạng thái', 'Tiến độ (%)', 'SL dự kiến', 'SL thực tế', 'Điểm thi đua tối đa', 'Điểm thi đua đã đạt'];
     }
 
     public function map($activity): array
@@ -44,6 +44,8 @@ class ActivitiesExport implements FromCollection, WithHeadings, WithMapping, Wit
             $activity->progress,
             $activity->expected_quantity,
             $activity->actual_quantity,
+            $activity->counts_for_evaluation ? $activity->evaluation_max_score : '',
+            $activity->counts_for_evaluation ? $activity->earnedEvaluationScore() : '',
         ];
     }
 

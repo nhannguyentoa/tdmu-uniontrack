@@ -25,6 +25,8 @@ class EvaluationScoreController extends Controller
             ?: $evaluationService->academicYears()->first()
             ?: '2025-2026';
 
+        $bonusCriterion = $evaluationService->bonusCriterion($academicYear);
+
         $criteria = EvaluationCriterion::with('department')
             ->where('academic_year', $academicYear)
             ->orderByRaw("FIELD(group_label, 'I', 'II', 'III', 'thuong')")
@@ -37,11 +39,16 @@ class EvaluationScoreController extends Controller
             ->keyBy('evaluation_criterion_id');
 
         $academicYears = $evaluationService->academicYears();
+        $bonusActivities = $evaluationService->activitiesForBonus($unionGroup->id, $academicYear);
+        $bonusEarned = min($evaluationService->activityEarnedScore($unionGroup->id, $academicYear), (float) $bonusCriterion->max_score);
 
-        return view('evaluation.self-edit', compact('unionGroup', 'criteria', 'scores', 'academicYear', 'academicYears'));
+        return view('evaluation.self-edit', compact(
+            'unionGroup', 'criteria', 'scores', 'academicYear', 'academicYears',
+            'bonusCriterion', 'bonusActivities', 'bonusEarned'
+        ));
     }
 
-    public function updateSelf(Request $request, UnionGroup $unionGroup): RedirectResponse
+    public function updateSelf(Request $request, UnionGroup $unionGroup, EvaluationService $evaluationService): RedirectResponse
     {
         $user = $request->user();
         abort_unless($user->isAdmin() || $user->managesUnionGroup($unionGroup->id), 403);
@@ -52,6 +59,10 @@ class EvaluationScoreController extends Controller
             'scores.*.self_score' => ['nullable', 'numeric', 'min:0'],
             'scores.*.self_note' => ['nullable', 'string'],
         ]);
+
+        // Điểm thưởng luôn được tính tự động từ hoạt động — bỏ qua giá trị người dùng gửi lên (nếu có).
+        $bonusCriterionId = $evaluationService->bonusCriterion($data['academic_year'])->id;
+        unset($data['scores'][$bonusCriterionId]);
 
         DB::transaction(function () use ($data, $unionGroup, $request) {
             foreach ($data['scores'] ?? [] as $criterionId => $row) {

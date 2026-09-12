@@ -47,6 +47,20 @@
                     <x-progress-bar :value="$activity->progress" />
                 </div>
 
+                @if($activity->counts_for_evaluation)
+                    <div class="mt-5 border-t border-slate-100 pt-4">
+                        <p class="mb-1 text-xs font-medium text-slate-400">Điểm thi đua</p>
+                        <p class="text-sm text-slate-600">
+                            Tối đa <b>{{ rtrim(rtrim($activity->evaluation_max_score, '0'), '.') }}đ</b>
+                            @if($activity->status === \App\Models\Activity::STATUS_COMPLETED)
+                                — đã đạt <b class="text-green-600">{{ $activity->earnedEvaluationScore() }}đ</b> (tính vào điểm thưởng của {{ $activity->unionGroup?->name }})
+                            @else
+                                — chỉ ghi nhận điểm khi hoạt động <b>Đã hoàn thành</b>
+                            @endif
+                        </p>
+                    </div>
+                @endif
+
                 @if($activity->goal)
                     <div class="mt-5 border-t border-slate-100 pt-4">
                         <p class="mb-1 text-xs font-medium text-slate-400">Mục tiêu</p>

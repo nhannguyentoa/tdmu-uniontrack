@@ -7,7 +7,6 @@
                 <option value="">-- Tất cả vai trò --</option>
                 <option value="admin" @selected(request('role') === 'admin')>Quản trị viên</option>
                 <option value="officer" @selected(request('role') === 'officer')>Cán bộ công đoàn</option>
-                <option value="member" @selected(request('role') === 'member')>Đoàn viên</option>
             </select>
             <x-btn type="submit" variant="secondary">Tìm kiếm</x-btn>
             @if(request()->anyFilled(['search', 'role']))
@@ -40,8 +39,7 @@
                                 <td class="px-5 py-3 text-slate-600">
                                     @switch($u->role)
                                         @case('admin') Quản trị viên @break
-                                        @case('officer') Cán bộ công đoàn @break
-                                        @default Đoàn viên
+                                        @default Cán bộ công đoàn
                                     @endswitch
                                 </td>
                                 <td class="px-5 py-3">

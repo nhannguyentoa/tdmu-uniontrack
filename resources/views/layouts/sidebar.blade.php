@@ -49,16 +49,6 @@
             @endcan
         @endcan
 
-        @if($user->isMember())
-            <p class="mt-4 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Cá nhân</p>
-            @if($user->member)
-                <x-nav-section-link :href="route('members.show', $user->member)" :active="request()->routeIs('members.show')">
-                    <x-slot name="icon"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></x-slot>
-                    Hồ sơ của tôi
-                </x-nav-section-link>
-            @endif
-        @endif
-
         <p class="mt-4 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Hoạt động</p>
         <x-nav-section-link :href="route('activities.index')" :active="request()->routeIs('activities.index') || request()->routeIs('activities.show')">
             <x-slot name="icon"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></x-slot>

@@ -77,25 +77,54 @@
     @else
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             @foreach($activities as $activity)
-                <a href="{{ route('activities.show', $activity) }}" class="block rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md">
-                    <div class="mb-2 flex items-start justify-between gap-2">
-                        <span class="text-xs font-medium text-slate-400">{{ $activity->code }}</span>
-                        <x-status-badge :status="$activity->status" />
-                    </div>
-                    <h3 class="mb-1 font-semibold text-slate-800">{{ $activity->name }}</h3>
-                    <p class="mb-3 text-xs text-slate-500">{{ $activity->unionGroup?->name }} · {{ $activity->activityType?->name }}</p>
-                    <p class="mb-3 text-xs text-slate-400">
-                        {{ $activity->start_time->format('d/m/Y H:i') }} — {{ $activity->end_time->format('d/m/Y H:i') }}
-                        @if($activity->isOverdue())
-                            <span class="ml-1 font-medium text-red-500">(Quá hạn)</span>
-                        @endif
-                    </p>
-                    <x-progress-bar :value="$activity->progress" />
+                @php($canQuickUpdate = auth()->user()->can('update', $activity))
+                <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md">
+                    <a href="{{ route('activities.show', $activity) }}" class="block">
+                        <div class="mb-2 flex items-start justify-between gap-2">
+                            <span class="text-xs font-medium text-slate-400">{{ $activity->code }}</span>
+                            <x-status-badge :status="$activity->status" />
+                        </div>
+                        <h3 class="mb-1 font-semibold text-slate-800">{{ $activity->name }}</h3>
+                        <p class="mb-3 text-xs text-slate-500">{{ $activity->unionGroup?->name }} · {{ $activity->activityType?->name }}</p>
+                        <p class="mb-3 text-xs text-slate-400">
+                            {{ $activity->start_time->format('d/m/Y H:i') }} — {{ $activity->end_time->format('d/m/Y H:i') }}
+                            @if($activity->isOverdue())
+                                <span class="ml-1 font-medium text-red-500">(Quá hạn)</span>
+                            @endif
+                        </p>
+                    </a>
+
+                    @if($canQuickUpdate)
+                        <form method="POST" action="{{ route('activities.quick-update', $activity) }}" class="space-y-2">
+                            @csrf
+                            @method('PATCH')
+                            <select name="status" onchange="this.form.submit()"
+                                    class="block w-full rounded-lg border-slate-300 py-1.5 text-xs shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                @foreach(\App\Models\Activity::STATUSES as $key => $label)
+                                    <option value="{{ $key }}" @selected($activity->status === $key)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <x-progress-bar :value="$activity->progress" />
+                            <div class="flex items-center gap-1">
+                                @foreach([0, 25, 50, 75, 100] as $m)
+                                    <button type="submit" name="progress" value="{{ $m }}"
+                                            @class([
+                                                'flex-1 rounded-md border px-1.5 py-1 text-[11px] font-medium transition',
+                                                'bg-blue-600 text-white border-blue-600' => (int) $activity->progress === $m,
+                                                'bg-slate-50 text-slate-500 border-slate-200 hover:border-blue-400' => (int) $activity->progress !== $m,
+                                            ])>{{ $m }}%</button>
+                                @endforeach
+                            </div>
+                        </form>
+                    @else
+                        <x-progress-bar :value="$activity->progress" />
+                    @endif
+
                     <div class="mt-3 flex items-center justify-between text-xs text-slate-400">
                         <span>{{ $activity->location ?: 'Chưa có địa điểm' }}</span>
                         <span>{{ $activity->members_count }} người tham gia</span>
                     </div>
-                </a>
+                </div>
             @endforeach
         </div>
 

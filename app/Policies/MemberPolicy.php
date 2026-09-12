@@ -14,10 +14,6 @@ class MemberPolicy
 
     public function view(User $user, Member $member): bool
     {
-        if ($user->isMember()) {
-            return $member->user_id === $user->id;
-        }
-
         return $user->managesUnionGroup($member->union_group_id);
     }
 

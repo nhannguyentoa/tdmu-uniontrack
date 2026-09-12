@@ -19,10 +19,6 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        if ($user->isMember()) {
-            return $this->memberDashboard($request);
-        }
-
         $unionGroupOptions = $user->isOfficer()
             ? $user->managedUnionGroups()->orderBy('name')->get()
             : UnionGroup::orderBy('name')->get();
@@ -60,23 +56,5 @@ class DashboardController extends Controller
             'statusDistribution', 'participantsByMonth', 'recentActivities',
             'unionGroupOptions', 'activityTypes', 'unionGroupId'
         ));
-    }
-
-    protected function memberDashboard(Request $request): View
-    {
-        $user = $request->user();
-        $member = $user->member;
-
-        $myActivities = $member
-            ? $member->activities()->with(['activityType', 'unionGroup'])->latest('start_time')->limit(10)->get()
-            : collect();
-
-        $upcomingActivities = Activity::with(['unionGroup', 'activityType'])
-            ->where('start_time', '>=', now())
-            ->orderBy('start_time')
-            ->limit(6)
-            ->get();
-
-        return view('dashboard.member', compact('member', 'myActivities', 'upcomingActivities'));
     }
 }

@@ -70,15 +70,6 @@ class UnionGroupTest extends TestCase
         $response->assertDontSee($other->name);
     }
 
-    public function test_member_cannot_access_union_groups(): void
-    {
-        $member = User::factory()->member()->create();
-
-        $response = $this->actingAs($member)->get('/union-groups');
-
-        $response->assertForbidden();
-    }
-
     public function test_cannot_delete_union_group_with_members(): void
     {
         $admin = User::factory()->admin()->create();

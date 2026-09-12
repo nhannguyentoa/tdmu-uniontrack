@@ -122,16 +122,6 @@ class ActivityTest extends TestCase
         $this->assertDatabaseHas('activities', ['id' => $activity->id, 'deleted_at' => null]);
     }
 
-    public function test_everyone_can_view_activity_list_including_members(): void
-    {
-        $member = User::factory()->member()->create();
-
-        $response = $this->actingAs($member)->get('/activities');
-
-        $response->assertOk();
-        $response->assertDontSee('Thêm hoạt động');
-    }
-
     public function test_status_change_records_history(): void
     {
         $admin = User::factory()->admin()->create();
@@ -157,5 +147,47 @@ class ActivityTest extends TestCase
             'status' => 'in_progress',
             'progress' => 40,
         ]);
+    }
+
+    public function test_officer_can_quick_update_status_and_progress_without_full_edit(): void
+    {
+        $officer = User::factory()->officer()->create();
+        $group = UnionGroup::factory()->create();
+        $officer->managedUnionGroups()->attach($group->id);
+        $activity = Activity::factory()->create(['union_group_id' => $group->id, 'status' => 'not_started', 'progress' => 0]);
+
+        $response = $this->actingAs($officer)->patch("/activities/{$activity->id}/quick-update", [
+            'status' => 'in_progress',
+            'progress' => 50,
+        ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('activities', ['id' => $activity->id, 'status' => 'in_progress', 'progress' => 50]);
+        $this->assertDatabaseHas('activity_status_histories', ['activity_id' => $activity->id, 'status' => 'in_progress', 'progress' => 50]);
+    }
+
+    public function test_quick_update_rejects_non_milestone_progress(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $activity = Activity::factory()->create();
+
+        $response = $this->actingAs($admin)->patch("/activities/{$activity->id}/quick-update", [
+            'progress' => 42,
+        ]);
+
+        $response->assertSessionHasErrors('progress');
+    }
+
+    public function test_officer_cannot_quick_update_activity_of_another_group(): void
+    {
+        $officer = User::factory()->officer()->create();
+        $otherGroup = UnionGroup::factory()->create();
+        $activity = Activity::factory()->create(['union_group_id' => $otherGroup->id]);
+
+        $response = $this->actingAs($officer)->patch("/activities/{$activity->id}/quick-update", [
+            'status' => 'completed',
+        ]);
+
+        $response->assertForbidden();
     }
 }

@@ -57,7 +57,12 @@
                             <td class="px-5 py-3 text-slate-500">{{ $i + 1 }}</td>
                             <td class="px-5 py-3 font-medium text-slate-700">{{ $row['union_group']->name }}</td>
                             <td class="px-5 py-3 text-center text-slate-500">{{ $row['standard_total'] }}</td>
-                            <td class="px-5 py-3 text-center text-slate-700">{{ $row['self_total'] ?? '—' }}</td>
+                            <td class="px-5 py-3 text-center text-slate-700">
+                                {{ $row['self_total'] ?? '—' }}
+                                @if($row['activity_bonus'] > 0)
+                                    <p class="text-[11px] text-slate-400">trong đó {{ $row['activity_bonus'] }}đ từ hoạt động</p>
+                                @endif
+                            </td>
                             <td class="px-5 py-3 text-center text-slate-700">
                                 {{ $row['verified_total'] ?? '—' }}
                                 <p class="text-[11px] text-slate-400">{{ $row['verified_count'] }}/{{ $row['criteria_count'] }} tiêu chí</p>

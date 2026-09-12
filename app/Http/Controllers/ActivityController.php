@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ActivitiesExport;
+use App\Http\Requests\Activities\QuickUpdateActivityRequest;
 use App\Http\Requests\Activities\StoreActivityRequest;
 use App\Http\Requests\Activities\UpdateActivityRequest;
 use App\Models\Activity;
@@ -84,6 +85,7 @@ class ActivityController extends Controller
         $collaboratingGroups = $data['collaborating_groups'] ?? [];
         $fromActivityPlanId = $data['from_activity_plan_id'] ?? null;
         unset($data['collaborating_groups'], $data['from_activity_plan_id']);
+        $data['counts_for_evaluation'] = $request->boolean('counts_for_evaluation');
         $data['created_by'] = $request->user()->id;
 
         $activity = Activity::create($data);
@@ -137,6 +139,7 @@ class ActivityController extends Controller
         $data = $request->validated();
         $collaboratingGroups = $data['collaborating_groups'] ?? [];
         unset($data['collaborating_groups']);
+        $data['counts_for_evaluation'] = $request->boolean('counts_for_evaluation');
         $data['updated_by'] = $request->user()->id;
 
         $statusChanged = $activity->status !== $data['status'] || (int) $activity->progress !== (int) $data['progress'];
@@ -154,6 +157,32 @@ class ActivityController extends Controller
         }
 
         return redirect()->route('activities.show', $activity)->with('success', 'Đã cập nhật hoạt động thành công.');
+    }
+
+    public function quickUpdate(QuickUpdateActivityRequest $request, Activity $activity): RedirectResponse
+    {
+        $data = $request->validated();
+
+        if (empty($data)) {
+            return back();
+        }
+
+        $statusChanged = (isset($data['status']) && $data['status'] !== $activity->status)
+            || (isset($data['progress']) && (int) $data['progress'] !== (int) $activity->progress);
+
+        $data['updated_by'] = $request->user()->id;
+        $activity->update($data);
+
+        if ($statusChanged) {
+            $activity->statusHistories()->create([
+                'status' => $activity->status,
+                'progress' => $activity->progress,
+                'note' => 'Cập nhật nhanh trạng thái/tiến độ từ danh sách hoạt động.',
+                'changed_by' => $request->user()->id,
+            ]);
+        }
+
+        return back()->with('success', 'Đã cập nhật hoạt động '.$activity->code.'.');
     }
 
     public function destroy(Activity $activity): RedirectResponse

@@ -31,8 +31,7 @@
         <select id="role" name="role" x-data x-on:change="document.getElementById('union-group-picker').classList.toggle('hidden', $event.target.value !== 'officer')"
                 class="mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
             <option value="admin" @selected(old('role', $u?->role) === 'admin')>Quản trị viên</option>
-            <option value="officer" @selected(old('role', $u?->role) === 'officer')>Cán bộ công đoàn</option>
-            <option value="member" @selected(old('role', $u?->role ?? 'member') === 'member')>Đoàn viên</option>
+            <option value="officer" @selected(old('role', $u?->role ?? 'officer') === 'officer')>Cán bộ công đoàn</option>
         </select>
         <x-input-error :messages="$errors->get('role')" class="mt-1" />
     </div>
@@ -43,7 +42,7 @@
         <x-input-error :messages="$errors->get('phone')" class="mt-1" />
     </div>
 
-    <div id="union-group-picker" class="sm:col-span-2 {{ old('role', $u?->role) !== 'officer' ? 'hidden' : '' }}">
+    <div id="union-group-picker" class="sm:col-span-2 {{ old('role', $u?->role ?? 'officer') !== 'officer' ? 'hidden' : '' }}">
         <x-input-label value="Tổ công đoàn phụ trách (dành cho cán bộ công đoàn)" />
         <div class="mt-1 grid grid-cols-2 gap-2 rounded-lg border border-slate-200 p-3 sm:grid-cols-3">
             @foreach($unionGroups as $group)

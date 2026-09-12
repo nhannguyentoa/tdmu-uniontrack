@@ -17,7 +17,7 @@ class StoreUserRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', 'in:admin,officer,member'],
+            'role' => ['required', 'in:admin,officer'],
             'phone' => ['nullable', 'string', 'max:20', 'regex:/^[0-9+\s.()-]{8,20}$/'],
             'is_active' => ['boolean'],
             'union_group_ids' => ['nullable', 'array'],

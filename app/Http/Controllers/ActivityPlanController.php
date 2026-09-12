@@ -7,6 +7,7 @@ use App\Http\Requests\ActivityPlans\UpdateActivityPlanRequest;
 use App\Models\ActivityPlan;
 use App\Models\Department;
 use App\Models\UnionGroup;
+use App\Support\AcademicYear;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -24,7 +25,7 @@ class ActivityPlanController extends Controller
         $plans = ActivityPlan::with(['hostUnionGroup', 'department', 'activity'])
             ->where('academic_year', $academicYear)
             ->get()
-            ->sortBy(fn (ActivityPlan $plan) => $this->academicMonthOrder($plan->month))
+            ->sortBy(fn (ActivityPlan $plan) => AcademicYear::monthOrder($plan->month))
             ->groupBy('month');
 
         $academicYears = ActivityPlan::query()->distinct()->orderByDesc('academic_year')->pluck('academic_year');
@@ -82,11 +83,4 @@ class ActivityPlanController extends Controller
             ->with('success', 'Đã xóa kế hoạch hoạt động thành công.');
     }
 
-    /**
-     * Thứ tự tháng theo năm học (bắt đầu từ tháng 8, kết thúc tháng 7 năm sau).
-     */
-    protected function academicMonthOrder(int $month): int
-    {
-        return $month >= 8 ? $month - 8 : $month + 4;
-    }
 }

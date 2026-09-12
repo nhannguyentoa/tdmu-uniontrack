@@ -57,16 +57,5 @@ class UserSeeder extends Seeder
             ]);
             $multiOfficer->managedUnionGroups()->attach($groups->take(2)->pluck('id'));
         }
-
-        // Tài khoản đoàn viên mẫu để kiểm thử đăng nhập với vai trò Đoàn viên.
-        User::create([
-            'name' => 'Đoàn viên Demo',
-            'email' => 'member@tdmu.edu.vn',
-            'password' => Hash::make('Member@123'),
-            'role' => User::ROLE_MEMBER,
-            'phone' => '0904444444',
-            'is_active' => true,
-            'email_verified_at' => now(),
-        ]);
     }
 }

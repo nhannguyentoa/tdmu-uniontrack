@@ -46,23 +46,9 @@ class ActivityPlanTest extends TestCase
         ]);
     }
 
-    public function test_member_cannot_create_activity_plan(): void
-    {
-        $member = User::factory()->member()->create();
-
-        $response = $this->actingAs($member)->post('/activity-plans', [
-            'academic_year' => '2026-2027',
-            'month' => 9,
-            'title' => 'Không được phép',
-            'status' => 'planned',
-        ]);
-
-        $response->assertForbidden();
-    }
-
     public function test_index_groups_plans_by_month_for_selected_academic_year(): void
     {
-        $user = User::factory()->member()->create();
+        $user = User::factory()->officer()->create();
         ActivityPlan::create([
             'academic_year' => '2026-2027',
             'month' => 9,

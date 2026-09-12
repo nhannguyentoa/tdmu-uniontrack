@@ -74,28 +74,6 @@ class MemberTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function test_member_role_can_view_own_profile(): void
-    {
-        $user = User::factory()->member()->create();
-        $group = UnionGroup::factory()->create();
-        $member = Member::factory()->create(['union_group_id' => $group->id, 'user_id' => $user->id]);
-
-        $response = $this->actingAs($user)->get("/members/{$member->id}");
-
-        $response->assertOk();
-    }
-
-    public function test_member_role_cannot_view_others_profile(): void
-    {
-        $user = User::factory()->member()->create();
-        $group = UnionGroup::factory()->create();
-        $otherMember = Member::factory()->create(['union_group_id' => $group->id]);
-
-        $response = $this->actingAs($user)->get("/members/{$otherMember->id}");
-
-        $response->assertForbidden();
-    }
-
     public function test_cannot_delete_member_who_has_participated_in_activities(): void
     {
         $admin = User::factory()->admin()->create();

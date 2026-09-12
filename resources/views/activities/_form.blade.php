@@ -107,8 +107,10 @@
     </div>
 
     <div>
-        <x-input-label for="progress" value="Tiến độ (%) *" />
-        <x-text-input id="progress" name="progress" type="number" min="0" max="100" class="mt-1 block w-full" :value="old('progress', $a?->progress ?? 0)" required />
+        <x-input-label value="Tiến độ (%) *" />
+        <div class="mt-1">
+            <x-progress-picker name="progress" :value="old('progress', $a?->progress ?? 0)" />
+        </div>
         <x-input-error :messages="$errors->get('progress')" class="mt-1" />
     </div>
 
@@ -116,6 +118,20 @@
         <x-input-label for="budget" value="Kinh phí (VNĐ)" />
         <x-text-input id="budget" name="budget" type="number" min="0" step="1000" class="mt-1 block w-full" :value="old('budget', $a?->budget)" />
         <x-input-error :messages="$errors->get('budget')" class="mt-1" />
+    </div>
+
+    <div class="sm:col-span-2 rounded-lg border border-slate-200 p-4" x-data="{ counts: {{ old('counts_for_evaluation', $a?->counts_for_evaluation ?? false) ? 'true' : 'false' }} }">
+        <label class="flex items-center gap-2 text-sm font-medium text-slate-700">
+            <input type="checkbox" name="counts_for_evaluation" value="1" x-model="counts"
+                   @checked(old('counts_for_evaluation', $a?->counts_for_evaluation)) class="rounded border-slate-300 text-blue-600">
+            Hoạt động này có tính điểm thi đua
+        </label>
+        <p class="mt-1 text-xs text-slate-500">Nếu chọn, điểm sẽ tự động hiện trong phần Chấm điểm thi đua của tổ chủ trì khi hoạt động Đã hoàn thành — điểm đạt được = điểm tối đa × tiến độ.</p>
+        <div x-show="counts" x-cloak class="mt-3 max-w-xs">
+            <x-input-label for="evaluation_max_score" value="Điểm thi đua tối đa *" />
+            <x-text-input id="evaluation_max_score" name="evaluation_max_score" type="number" min="0.5" max="50" step="0.5" class="mt-1 block w-full" :value="old('evaluation_max_score', $a?->evaluation_max_score)" />
+            <x-input-error :messages="$errors->get('evaluation_max_score')" class="mt-1" />
+        </div>
     </div>
 
     <div class="sm:col-span-2">

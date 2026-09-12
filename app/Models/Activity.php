@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\AcademicYear;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,6 +18,7 @@ use Illuminate\Support\Carbon;
     'code', 'name', 'union_group_id', 'activity_type_id', 'responsible_user_id',
     'responsible_name', 'start_time', 'end_time', 'location', 'content', 'goal',
     'expected_quantity', 'actual_quantity', 'status', 'progress', 'budget',
+    'counts_for_evaluation', 'evaluation_max_score',
     'note', 'created_by', 'updated_by',
 ])]
 class Activity extends Model
@@ -59,6 +61,8 @@ class Activity extends Model
             'start_time' => 'datetime',
             'end_time' => 'datetime',
             'budget' => 'decimal:2',
+            'counts_for_evaluation' => 'boolean',
+            'evaluation_max_score' => 'decimal:2',
         ];
     }
 
@@ -135,6 +139,29 @@ class Activity extends Model
             && $this->status !== self::STATUS_CANCELLED
             && $this->end_time !== null
             && $this->end_time->isPast();
+    }
+
+    /**
+     * Điểm thi đua đã đạt được từ hoạt động này: chỉ ghi nhận khi trạng thái là "Đã hoàn thành",
+     * tiến độ quyết định tỷ lệ điểm đạt được trên tổng điểm tối đa đã đặt khi tạo hoạt động.
+     */
+    public function earnedEvaluationScore(): float
+    {
+        if (! $this->counts_for_evaluation || $this->status !== self::STATUS_COMPLETED || ! $this->evaluation_max_score) {
+            return 0.0;
+        }
+
+        return round((float) $this->evaluation_max_score * $this->progress / 100, 2);
+    }
+
+    public function academicYear(): string
+    {
+        return AcademicYear::forDate($this->start_time);
+    }
+
+    public function scopeCountsForEvaluation(Builder $query): Builder
+    {
+        return $query->where('counts_for_evaluation', true);
     }
 
     public function scopeForUnionGroup(Builder $query, ?int $unionGroupId): Builder
