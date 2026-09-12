@@ -47,7 +47,7 @@ class ParticipantsExport implements FromCollection, WithHeadings, WithMapping, W
         return 'Người tham gia';
     }
 
-    public function styles(Worksheet $sheet)
+    public function styles(Worksheet $sheet): ?array
     {
         $lastRow = $sheet->getHighestRow();
 

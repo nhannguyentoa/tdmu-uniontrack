@@ -51,25 +51,25 @@ class EvaluationReportExport implements FromCollection, WithHeadings, WithMappin
         return 'Báo cáo Hội đồng '.$this->academicYear;
     }
 
-    public function styles(Worksheet $sheet)
+    public function styles(Worksheet $sheet): ?array
     {
         $lastRow = $sheet->getHighestRow();
 
-        $sheet->getStyle("A1:G{$lastRow}")
+        $sheet->getStyle("A1:H{$lastRow}")
             ->getBorders()->getAllBorders()
             ->setBorderStyle(Border::BORDER_THIN);
 
-        $sheet->getStyle('A1:G1')->getFont()->setBold(true);
-        $sheet->getStyle('A1:G1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A1:H1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:H1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $sheet->getStyle('A2:A'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('C2:F'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('G2:G'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('C2:G'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('H2:H'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         return [];
     }
 
     public function columnWidths(): array
     {
-        return ['A' => 8, 'B' => 26, 'C' => 14, 'D' => 16, 'E' => 16, 'F' => 18, 'G' => 24];
+        return ['A' => 8, 'B' => 26, 'C' => 14, 'D' => 16, 'E' => 20, 'F' => 16, 'G' => 18, 'H' => 24];
     }
 }

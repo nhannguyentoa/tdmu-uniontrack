@@ -50,7 +50,7 @@ class ReportExport implements FromArray, WithHeadings, WithTitle, WithStyles, Wi
         return 'Báo cáo';
     }
 
-    public function styles(Worksheet $sheet)
+    public function styles(Worksheet $sheet): ?array
     {
         $lastRow = $sheet->getHighestRow();
 

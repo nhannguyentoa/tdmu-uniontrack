@@ -55,7 +55,7 @@ class MembersExport implements FromCollection, WithHeadings, WithMapping, WithTi
         return 'Danh sách đoàn viên';
     }
 
-    public function styles(Worksheet $sheet)
+    public function styles(Worksheet $sheet): ?array
     {
         $lastRow = $sheet->getHighestRow();
 

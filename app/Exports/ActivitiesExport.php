@@ -54,18 +54,18 @@ class ActivitiesExport implements FromCollection, WithHeadings, WithMapping, Wit
         return 'Danh sách hoạt động';
     }
 
-    public function styles(Worksheet $sheet)
+    public function styles(Worksheet $sheet): ?array
     {
         $lastRow = $sheet->getHighestRow();
 
-        $sheet->getStyle("A1:K{$lastRow}")
+        $sheet->getStyle("A1:M{$lastRow}")
             ->getBorders()->getAllBorders()
             ->setBorderStyle(Border::BORDER_THIN);
 
-        $sheet->getStyle('A1:K1')->getFont()->setBold(true);
-        $sheet->getStyle('A1:K1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A1:M1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:M1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $sheet->getStyle('H2:H'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('I2:K'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('I2:M'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         return [];
     }
@@ -75,7 +75,7 @@ class ActivitiesExport implements FromCollection, WithHeadings, WithMapping, Wit
         return [
             'A' => 14, 'B' => 30, 'C' => 18, 'D' => 18,
             'E' => 18, 'F' => 18, 'G' => 22, 'H' => 16,
-            'I' => 12, 'J' => 12, 'K' => 12,
+            'I' => 12, 'J' => 12, 'K' => 12, 'L' => 16, 'M' => 16,
         ];
     }
 }
