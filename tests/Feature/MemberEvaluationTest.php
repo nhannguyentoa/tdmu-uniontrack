@@ -15,6 +15,19 @@ class MemberEvaluationTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_sidebar_shows_direct_shortcut_for_single_group_officer(): void
+    {
+        $officer = User::factory()->officer()->create();
+        $group = UnionGroup::factory()->create();
+        $officer->managedUnionGroups()->attach($group->id);
+
+        $response = $this->actingAs($officer)->get('/dashboard');
+
+        $response->assertOk();
+        $response->assertSee(route('evaluation.members.edit', $group), false);
+        $response->assertSee('Chấm điểm đoàn viên');
+    }
+
     public function test_officer_can_classify_members_of_owned_group(): void
     {
         $officer = User::factory()->officer()->create();
