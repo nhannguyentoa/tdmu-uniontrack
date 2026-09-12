@@ -9,6 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EvaluationCriterionController;
 use App\Http\Controllers\EvaluationScoreController;
 use App\Http\Controllers\MemberController;
+use App\Http\Controllers\MemberEvaluationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UnionGroupController;
@@ -92,6 +93,8 @@ Route::middleware('auth')->group(function () {
     Route::put('evaluation/verify', [EvaluationScoreController::class, 'updateVerify'])->name('evaluation.verify.update');
     Route::get('evaluation/{union_group}/self', [EvaluationScoreController::class, 'editSelf'])->name('evaluation.self.edit');
     Route::put('evaluation/{union_group}/self', [EvaluationScoreController::class, 'updateSelf'])->name('evaluation.self.update');
+    Route::get('evaluation/{union_group}/members', [MemberEvaluationController::class, 'edit'])->name('evaluation.members.edit');
+    Route::put('evaluation/{union_group}/members', [MemberEvaluationController::class, 'update'])->name('evaluation.members.update');
 
     // Báo cáo & thống kê
     Route::get('reports', [ReportController::class, 'month'])->name('reports.index');

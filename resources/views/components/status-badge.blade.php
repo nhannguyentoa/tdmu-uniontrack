@@ -13,6 +13,10 @@
         'registered' => ['label' => 'Đã đăng ký', 'class' => 'bg-sky-100 text-sky-700'],
         'attended' => ['label' => 'Đã tham gia', 'class' => 'bg-green-100 text-green-700'],
         'absent' => ['label' => 'Vắng mặt', 'class' => 'bg-red-100 text-red-700'],
+        'xuat_sac' => ['label' => 'Đoàn viên xuất sắc', 'class' => 'bg-green-100 text-green-700'],
+        'tich_cuc' => ['label' => 'Đoàn viên tích cực', 'class' => 'bg-sky-100 text-sky-700'],
+        'hoan_thanh' => ['label' => 'Hoàn thành nhiệm vụ', 'class' => 'bg-slate-100 text-slate-600'],
+        'chua_hoan_thanh' => ['label' => 'Chưa hoàn thành nhiệm vụ', 'class' => 'bg-red-100 text-red-700'],
     ];
     $item = $map[$status] ?? ['label' => $status, 'class' => 'bg-slate-100 text-slate-600'];
 @endphp

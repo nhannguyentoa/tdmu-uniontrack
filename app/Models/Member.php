@@ -47,4 +47,9 @@ class Member extends Model
             ->withPivot(['role_note', 'status', 'registered_at', 'note'])
             ->withTimestamps();
     }
+
+    public function evaluations(): HasMany
+    {
+        return $this->hasMany(MemberEvaluation::class);
+    }
 }

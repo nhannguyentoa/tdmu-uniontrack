@@ -8,13 +8,16 @@
             <h2 class="text-lg font-semibold text-slate-800">Tự chấm điểm — {{ $unionGroup->name }}</h2>
             <p class="text-sm text-slate-500">Năm học {{ $academicYear }}. Điền điểm tự chấm cho từng tiêu chí (không vượt quá điểm chuẩn).</p>
         </div>
-        <form method="GET">
-            <select name="academic_year" onchange="this.form.submit()" class="rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                @foreach($academicYears as $year)
-                    <option value="{{ $year }}" @selected($year === $academicYear)>Năm học {{ $year }}</option>
-                @endforeach
-            </select>
-        </form>
+        <div class="flex items-center gap-2">
+            <form method="GET">
+                <select name="academic_year" onchange="this.form.submit()" class="rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    @foreach($academicYears as $year)
+                        <option value="{{ $year }}" @selected($year === $academicYear)>Năm học {{ $year }}</option>
+                    @endforeach
+                </select>
+            </form>
+            <x-btn href="{{ route('evaluation.members.edit', ['union_group' => $unionGroup, 'academic_year' => $academicYear]) }}" variant="secondary">Chấm điểm đoàn viên trong tổ →</x-btn>
+        </div>
     </div>
 
     <x-card no-padding class="mb-5">

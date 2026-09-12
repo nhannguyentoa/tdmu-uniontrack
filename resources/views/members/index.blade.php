@@ -22,6 +22,9 @@
         </form>
 
         <div class="flex gap-2">
+            @if(request()->filled('union_group_id') && auth()->user()->managesUnionGroup((int) request('union_group_id')))
+                <x-btn href="{{ route('evaluation.members.edit', ['union_group' => request('union_group_id')]) }}" variant="secondary">Chấm điểm thi đua</x-btn>
+            @endif
             <x-btn href="{{ route('members.export', request()->query()) }}" variant="secondary">Xuất Excel</x-btn>
             @can('create', \App\Models\Member::class)
                 <x-btn href="{{ route('members.create') }}">+ Thêm đoàn viên</x-btn>

@@ -11,6 +11,9 @@
             @can('update', $unionGroup)
                 <x-btn href="{{ route('union-groups.edit', $unionGroup) }}" variant="secondary">Chỉnh sửa</x-btn>
             @endcan
+            @if(auth()->user()->managesUnionGroup($unionGroup->id))
+                <x-btn href="{{ route('evaluation.members.edit', $unionGroup) }}" variant="secondary">Chấm điểm thi đua đoàn viên</x-btn>
+            @endif
             <x-btn href="{{ route('members.create', ['union_group_id' => $unionGroup->id]) }}">+ Thêm đoàn viên</x-btn>
         </div>
     </div>
