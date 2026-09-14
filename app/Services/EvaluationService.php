@@ -16,9 +16,18 @@ class EvaluationService
     public const CLASSIFICATION_NOT_MET = 'Chưa hoàn thành nhiệm vụ';
     public const CLASSIFICATION_PENDING = 'Chưa thẩm định xong';
 
+    /**
+     * Danh sách năm học để chọn — luôn gồm năm học hiện tại (theo ngày thực) dù chưa có tiêu chí nào,
+     * để hoạt động vừa tạo trong năm học hiện tại luôn tìm thấy đúng năm học của nó.
+     */
     public function academicYears(): Collection
     {
-        return EvaluationCriterion::query()->distinct()->orderByDesc('academic_year')->pluck('academic_year');
+        $existing = EvaluationCriterion::query()->distinct()->pluck('academic_year');
+
+        return $existing->push(AcademicYear::forDate(now()))
+            ->unique()
+            ->sortByDesc(fn (string $year) => $year)
+            ->values();
     }
 
     public function classify(?float $score): string

@@ -18,7 +18,7 @@ use Illuminate\Support\Carbon;
     'code', 'name', 'union_group_id', 'activity_type_id', 'responsible_user_id',
     'responsible_name', 'start_time', 'end_time', 'location', 'content', 'goal',
     'expected_quantity', 'actual_quantity', 'status', 'progress', 'budget',
-    'counts_for_evaluation', 'evaluation_max_score',
+    'counts_for_evaluation', 'evaluation_max_score', 'evaluation_approved_at', 'evaluation_approved_by',
     'note', 'created_by', 'updated_by',
 ])]
 class Activity extends Model
@@ -63,6 +63,7 @@ class Activity extends Model
             'budget' => 'decimal:2',
             'counts_for_evaluation' => 'boolean',
             'evaluation_max_score' => 'decimal:2',
+            'evaluation_approved_at' => 'datetime',
         ];
     }
 
@@ -84,6 +85,11 @@ class Activity extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function evaluationApprovedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'evaluation_approved_by');
     }
 
     public function participants(): HasMany
@@ -142,16 +148,31 @@ class Activity extends Model
     }
 
     /**
-     * Điểm thi đua đã đạt được từ hoạt động này: chỉ ghi nhận khi trạng thái là "Đã hoàn thành",
-     * tiến độ quyết định tỷ lệ điểm đạt được trên tổng điểm tối đa đã đặt khi tạo hoạt động.
+     * Điểm thi đua đã đạt được từ hoạt động này: chỉ ghi nhận khi trạng thái là "Đã hoàn thành"
+     * VÀ đã được Quản trị viên duyệt — tiến độ quyết định tỷ lệ điểm đạt được trên tổng điểm tối
+     * đa đã đặt khi tạo hoạt động.
      */
     public function earnedEvaluationScore(): float
     {
-        if (! $this->counts_for_evaluation || $this->status !== self::STATUS_COMPLETED || ! $this->evaluation_max_score) {
+        if (! $this->counts_for_evaluation || $this->status !== self::STATUS_COMPLETED
+            || ! $this->evaluation_max_score || ! $this->isEvaluationApproved()) {
             return 0.0;
         }
 
         return round((float) $this->evaluation_max_score * $this->progress / 100, 2);
+    }
+
+    public function isEvaluationApproved(): bool
+    {
+        return $this->evaluation_approved_at !== null;
+    }
+
+    /**
+     * Nút "Duyệt" chỉ hợp lệ khi hoạt động có tính điểm thi đua và đã ở trạng thái Đã hoàn thành.
+     */
+    public function canToggleEvaluationApproval(): bool
+    {
+        return $this->counts_for_evaluation && $this->status === self::STATUS_COMPLETED;
     }
 
     public function academicYear(): string

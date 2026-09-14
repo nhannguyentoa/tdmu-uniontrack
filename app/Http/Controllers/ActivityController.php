@@ -185,6 +185,25 @@ class ActivityController extends Controller
         return back()->with('success', 'Đã cập nhật hoạt động '.$activity->code.'.');
     }
 
+    public function toggleEvaluationApproval(Request $request, Activity $activity): RedirectResponse
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+
+        if (! $activity->canToggleEvaluationApproval()) {
+            return back()->with('error', 'Chỉ có thể duyệt điểm thi đua cho hoạt động có tính điểm và đã hoàn thành.');
+        }
+
+        if ($activity->isEvaluationApproved()) {
+            $activity->update(['evaluation_approved_at' => null, 'evaluation_approved_by' => null]);
+
+            return back()->with('success', 'Đã hủy duyệt điểm thi đua của hoạt động '.$activity->code.'.');
+        }
+
+        $activity->update(['evaluation_approved_at' => now(), 'evaluation_approved_by' => $request->user()->id]);
+
+        return back()->with('success', 'Đã duyệt điểm thi đua của hoạt động '.$activity->code.'.');
+    }
+
     public function destroy(Activity $activity): RedirectResponse
     {
         $this->authorize('delete', $activity);

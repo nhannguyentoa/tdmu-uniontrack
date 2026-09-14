@@ -49,15 +49,39 @@
 
                 @if($activity->counts_for_evaluation)
                     <div class="mt-5 border-t border-slate-100 pt-4">
-                        <p class="mb-1 text-xs font-medium text-slate-400">Điểm thi đua</p>
+                        <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
+                            <p class="text-xs font-medium text-slate-400">Điểm thi đua</p>
+                            @if($activity->status === \App\Models\Activity::STATUS_COMPLETED)
+                                @if($activity->isEvaluationApproved())
+                                    <span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700">
+                                        Đã duyệt bởi {{ $activity->evaluationApprovedBy?->name }} · {{ $activity->evaluation_approved_at->format('d/m/Y H:i') }}
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">
+                                        Chưa duyệt — chưa tính vào điểm thưởng
+                                    </span>
+                                @endif
+                            @endif
+                        </div>
                         <p class="text-sm text-slate-600">
                             Tối đa <b>{{ rtrim(rtrim($activity->evaluation_max_score, '0'), '.') }}đ</b>
                             @if($activity->status === \App\Models\Activity::STATUS_COMPLETED)
-                                — đã đạt <b class="text-green-600">{{ $activity->earnedEvaluationScore() }}đ</b> (tính vào điểm thưởng của {{ $activity->unionGroup?->name }})
+                                — đã đạt <b class="text-green-600">{{ $activity->earnedEvaluationScore() }}đ</b> (tính vào điểm thưởng của {{ $activity->unionGroup?->name }} khi đã được duyệt)
                             @else
-                                — chỉ ghi nhận điểm khi hoạt động <b>Đã hoàn thành</b>
+                                — chỉ ghi nhận điểm khi hoạt động <b>Đã hoàn thành</b> và được Quản trị viên duyệt
                             @endif
                         </p>
+                        @if(auth()->user()->isAdmin() && $activity->canToggleEvaluationApproval())
+                            <form method="POST" action="{{ route('activities.toggle-evaluation-approval', $activity) }}" class="mt-3">
+                                @csrf
+                                @method('PATCH')
+                                @if($activity->isEvaluationApproved())
+                                    <x-btn type="submit" variant="secondary">Hủy duyệt điểm thi đua</x-btn>
+                                @else
+                                    <x-btn type="submit">Duyệt điểm thi đua</x-btn>
+                                @endif
+                            </form>
+                        @endif
                     </div>
                 @endif
 

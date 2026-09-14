@@ -60,6 +60,7 @@ Route::middleware('auth')->group(function () {
     Route::get('activities/{activity}/edit', [ActivityController::class, 'edit'])->name('activities.edit');
     Route::put('activities/{activity}', [ActivityController::class, 'update'])->name('activities.update');
     Route::patch('activities/{activity}/quick-update', [ActivityController::class, 'quickUpdate'])->name('activities.quick-update');
+    Route::patch('activities/{activity}/toggle-evaluation-approval', [ActivityController::class, 'toggleEvaluationApproval'])->name('activities.toggle-evaluation-approval');
     Route::delete('activities/{activity}', [ActivityController::class, 'destroy'])->name('activities.destroy');
 
     // Người tham gia hoạt động

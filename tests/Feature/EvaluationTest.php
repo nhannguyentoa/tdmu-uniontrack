@@ -188,6 +188,7 @@ class EvaluationTest extends TestCase
             'evaluation_max_score' => 10,
             'status' => Activity::STATUS_COMPLETED,
             'progress' => 100,
+            'evaluation_approved_at' => now(),
         ], $overrides));
     }
 

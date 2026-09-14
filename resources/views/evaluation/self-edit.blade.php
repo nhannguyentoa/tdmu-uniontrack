@@ -24,7 +24,8 @@
         <x-slot name="title">Điểm thưởng tự động từ hoạt động</x-slot>
         <p class="px-5 pt-3 text-xs text-slate-500">
             Đánh dấu "tính điểm thi đua" khi tạo hoạt động — điểm chỉ được ghi nhận khi hoạt động ở trạng thái
-            <b>Đã hoàn thành</b>, tiến độ quyết định tỷ lệ điểm đạt được trên điểm tối đa đã đặt.
+            <b>Đã hoàn thành</b> và đã được <b>Quản trị viên duyệt</b>; tiến độ quyết định tỷ lệ điểm đạt được
+            trên điểm tối đa đã đặt.
         </p>
         @if($bonusActivities->isEmpty())
             <div class="p-5"><x-empty-state title="Chưa có hoạt động nào được đánh dấu tính điểm thi đua trong năm học này" /></div>
@@ -35,6 +36,7 @@
                         <tr>
                             <th class="px-5 py-3">Hoạt động</th>
                             <th class="px-5 py-3">Trạng thái</th>
+                            <th class="px-5 py-3">Duyệt</th>
                             <th class="px-5 py-3 text-center">Tiến độ</th>
                             <th class="px-5 py-3 text-center">Điểm tối đa</th>
                             <th class="px-5 py-3 text-center">Điểm đạt được</th>
@@ -45,6 +47,15 @@
                             <tr>
                                 <td class="px-5 py-3"><a href="{{ route('activities.show', $activity) }}" class="font-medium text-blue-600 hover:underline">{{ $activity->name }}</a></td>
                                 <td class="px-5 py-3"><x-status-badge :status="$activity->status" /></td>
+                                <td class="px-5 py-3">
+                                    @if($activity->isEvaluationApproved())
+                                        <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Đã duyệt</span>
+                                    @elseif($activity->status === \App\Models\Activity::STATUS_COMPLETED)
+                                        <span class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">Chờ duyệt</span>
+                                    @else
+                                        <span class="text-xs text-slate-400">—</span>
+                                    @endif
+                                </td>
                                 <td class="px-5 py-3 text-center text-slate-500">{{ $activity->progress }}%</td>
                                 <td class="px-5 py-3 text-center text-slate-500">{{ rtrim(rtrim($activity->evaluation_max_score, '0'), '.') }}</td>
                                 <td class="px-5 py-3 text-center font-medium text-slate-700">{{ $activity->earnedEvaluationScore() }}</td>
@@ -53,7 +64,7 @@
                     </tbody>
                     <tfoot>
                         <tr class="border-t border-slate-200 bg-slate-50">
-                            <td class="px-5 py-3 font-semibold text-slate-700" colspan="4">Tổng điểm thưởng (tối đa {{ rtrim(rtrim($bonusCriterion->max_score, '0'), '.') }})</td>
+                            <td class="px-5 py-3 font-semibold text-slate-700" colspan="5">Tổng điểm thưởng (tối đa {{ rtrim(rtrim($bonusCriterion->max_score, '0'), '.') }})</td>
                             <td class="px-5 py-3 text-center font-semibold text-slate-800">{{ $bonusEarned }}</td>
                         </tr>
                     </tfoot>
