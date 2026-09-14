@@ -54,6 +54,31 @@ class SeedEvaluationCriteriaForYearTest extends TestCase
         ]);
     }
 
+    public function test_still_copies_criteria_when_target_year_only_has_an_auto_created_bonus_criterion(): void
+    {
+        $this->makeCriterion(['order_no' => 1, 'group_label' => 'I', 'content' => 'Tiêu chí A', 'max_score' => 5]);
+        $this->makeCriterion(['order_no' => 2, 'group_label' => 'thuong', 'content' => 'Điểm thưởng', 'max_score' => 10]);
+
+        // Mô phỏng EvaluationService::bonusCriterion() tự tạo trước một dòng "Điểm thưởng" riêng lẻ
+        // cho năm học đích, trước khi lệnh sao chép tiêu chí từng chạy.
+        $this->makeCriterion(['academic_year' => '2026-2027', 'order_no' => 1, 'group_label' => 'thuong', 'content' => 'Điểm thưởng', 'max_score' => 10]);
+
+        $this->artisan('app:seed-evaluation-criteria', ['academic_year' => '2026-2027'])
+            ->assertExitCode(0);
+
+        $this->assertSame(2, EvaluationCriterion::where('academic_year', '2026-2027')->count());
+        $this->assertDatabaseHas('evaluation_criteria', [
+            'academic_year' => '2026-2027',
+            'order_no' => 1,
+            'content' => 'Tiêu chí A',
+            'group_label' => 'I',
+        ]);
+        $this->assertSame(
+            1,
+            EvaluationCriterion::where('academic_year', '2026-2027')->where('group_label', 'thuong')->count()
+        );
+    }
+
     public function test_fails_gracefully_when_no_source_year_has_criteria(): void
     {
         $this->artisan('app:seed-evaluation-criteria', ['academic_year' => '2026-2027'])

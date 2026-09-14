@@ -118,48 +118,15 @@ class ActivityEvaluationApprovalTest extends TestCase
         $this->assertTrue($years->contains($currentYear));
     }
 
-    public function test_default_academic_year_prefers_the_year_with_existing_criteria(): void
-    {
-        \App\Models\EvaluationCriterion::create([
-            'academic_year' => '2025-2026',
-            'group_label' => 'I',
-            'order_no' => 1,
-            'content' => 'Tiêu chí kiểm thử',
-            'max_score' => 5,
-            'department_id' => null,
-        ]);
-
-        $currentYear = AcademicYear::forDate(now());
-        $default = app(EvaluationService::class)->defaultAcademicYear();
-
-        $this->assertSame('2025-2026', $default);
-        $this->assertNotSame($currentYear, $default);
-    }
-
-    public function test_default_academic_year_falls_back_to_current_year_when_no_criteria_exist(): void
+    public function test_default_academic_year_is_always_the_newest_year_even_with_older_scored_data(): void
     {
         $currentYear = AcademicYear::forDate(now());
 
-        $default = app(EvaluationService::class)->defaultAcademicYear();
-
-        $this->assertSame($currentYear, $default);
-    }
-
-    public function test_default_academic_year_prefers_scored_year_even_when_a_newer_year_only_has_copied_criteria(): void
-    {
         $oldCriterion = \App\Models\EvaluationCriterion::create([
             'academic_year' => '2025-2026',
             'group_label' => 'I',
             'order_no' => 1,
             'content' => 'Tiêu chí kiểm thử',
-            'max_score' => 5,
-            'department_id' => null,
-        ]);
-        \App\Models\EvaluationCriterion::create([
-            'academic_year' => '2026-2027',
-            'group_label' => 'I',
-            'order_no' => 1,
-            'content' => 'Tiêu chí kiểm thử (bản sao)',
             'max_score' => 5,
             'department_id' => null,
         ]);
@@ -172,6 +139,15 @@ class ActivityEvaluationApprovalTest extends TestCase
 
         $default = app(EvaluationService::class)->defaultAcademicYear();
 
-        $this->assertSame('2025-2026', $default);
+        $this->assertSame($currentYear, $default);
+    }
+
+    public function test_default_academic_year_falls_back_to_current_year_when_no_criteria_exist(): void
+    {
+        $currentYear = AcademicYear::forDate(now());
+
+        $default = app(EvaluationService::class)->defaultAcademicYear();
+
+        $this->assertSame($currentYear, $default);
     }
 }

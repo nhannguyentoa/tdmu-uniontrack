@@ -16,7 +16,15 @@ class SeedEvaluationCriteriaForYear extends Command
     {
         $targetYear = $this->argument('academic_year') ?: AcademicYear::forDate(now());
 
-        if (EvaluationCriterion::where('academic_year', $targetYear)->exists()) {
+        // Chi kiem tra tieu chi "that" (khac nhom thuong) - tieu chi Diem thuong co the da duoc
+        // tu dong tao rieng le boi EvaluationService::bonusCriterion() ngay khi ai do mo trang
+        // cham diem cho nam hoc nay, du chua he co tieu chi nao khac. Neu chi kiem tra "co ban
+        // ghi nao thuoc nam hoc nay khong" thi se bi bo qua oan, khong bao gio sao chep duoc nua.
+        $hasRealCriteria = EvaluationCriterion::where('academic_year', $targetYear)
+            ->where('group_label', '<>', EvaluationCriterion::GROUP_BONUS)
+            ->exists();
+
+        if ($hasRealCriteria) {
             $this->info("Nam hoc {$targetYear} da co tieu chi, bo qua.");
 
             return self::SUCCESS;
@@ -40,14 +48,17 @@ class SeedEvaluationCriteriaForYear extends Command
         }
 
         foreach ($sourceCriteria as $criterion) {
-            EvaluationCriterion::create([
-                'academic_year' => $targetYear,
-                'group_label' => $criterion->group_label,
-                'order_no' => $criterion->order_no,
-                'content' => $criterion->content,
-                'max_score' => $criterion->max_score,
-                'department_id' => $criterion->department_id,
-            ]);
+            // updateOrCreate theo (academic_year, order_no) de "de len" dung vi tri neu truoc do
+            // da co san mot ban ghi tam (vi du tieu chi Diem thuong tu dong tao o order_no nay).
+            EvaluationCriterion::updateOrCreate(
+                ['academic_year' => $targetYear, 'order_no' => $criterion->order_no],
+                [
+                    'group_label' => $criterion->group_label,
+                    'content' => $criterion->content,
+                    'max_score' => $criterion->max_score,
+                    'department_id' => $criterion->department_id,
+                ]
+            );
         }
 
         $this->info("Da sao chep {$sourceCriteria->count()} tieu chi tu nam hoc {$sourceYear} sang {$targetYear} (ban nhap, can vao trang Quan ly tieu chi de chinh lai noi dung/ngay thang cho phu hop ke hoach nam moi).");
