@@ -22,8 +22,7 @@ class EvaluationScoreController extends Controller
         abort_unless($user->isAdmin() || $user->managesUnionGroup($unionGroup->id), 403);
 
         $academicYear = $request->string('academic_year')->toString()
-            ?: $evaluationService->academicYears()->first()
-            ?: '2025-2026';
+            ?: $evaluationService->defaultAcademicYear();
 
         $bonusCriterion = $evaluationService->bonusCriterion($academicYear);
 
@@ -86,8 +85,7 @@ class EvaluationScoreController extends Controller
         abort_unless($request->user()->isAdmin(), 403);
 
         $academicYear = $request->string('academic_year')->toString()
-            ?: $evaluationService->academicYears()->first()
-            ?: '2025-2026';
+            ?: $evaluationService->defaultAcademicYear();
 
         $departments = Department::orderBy('name')->get();
         $departmentId = $request->integer('department_id') ?: $departments->first()?->id;
@@ -145,8 +143,7 @@ class EvaluationScoreController extends Controller
     public function report(Request $request, EvaluationService $evaluationService): View
     {
         $academicYear = $request->string('academic_year')->toString()
-            ?: $evaluationService->academicYears()->first()
-            ?: '2025-2026';
+            ?: $evaluationService->defaultAcademicYear();
 
         $summary = $evaluationService->summary($academicYear);
         $academicYears = $evaluationService->academicYears();
@@ -157,8 +154,7 @@ class EvaluationScoreController extends Controller
     public function exportExcel(Request $request, EvaluationService $evaluationService)
     {
         $academicYear = $request->string('academic_year')->toString()
-            ?: $evaluationService->academicYears()->first()
-            ?: '2025-2026';
+            ?: $evaluationService->defaultAcademicYear();
 
         $summary = $evaluationService->summary($academicYear);
 

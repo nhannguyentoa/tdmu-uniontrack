@@ -117,4 +117,31 @@ class ActivityEvaluationApprovalTest extends TestCase
 
         $this->assertTrue($years->contains($currentYear));
     }
+
+    public function test_default_academic_year_prefers_the_year_with_existing_criteria(): void
+    {
+        \App\Models\EvaluationCriterion::create([
+            'academic_year' => '2025-2026',
+            'group_label' => 'I',
+            'order_no' => 1,
+            'content' => 'Tiêu chí kiểm thử',
+            'max_score' => 5,
+            'department_id' => null,
+        ]);
+
+        $currentYear = AcademicYear::forDate(now());
+        $default = app(EvaluationService::class)->defaultAcademicYear();
+
+        $this->assertSame('2025-2026', $default);
+        $this->assertNotSame($currentYear, $default);
+    }
+
+    public function test_default_academic_year_falls_back_to_current_year_when_no_criteria_exist(): void
+    {
+        $currentYear = AcademicYear::forDate(now());
+
+        $default = app(EvaluationService::class)->defaultAcademicYear();
+
+        $this->assertSame($currentYear, $default);
+    }
 }

@@ -18,8 +18,7 @@ class EvaluationCriterionController extends Controller
         $this->authorize('viewAny', EvaluationCriterion::class);
 
         $academicYear = $request->string('academic_year')->toString()
-            ?: $evaluationService->academicYears()->first()
-            ?: '2025-2026';
+            ?: $evaluationService->defaultAcademicYear();
 
         $criteria = EvaluationCriterion::with('department')
             ->where('academic_year', $academicYear)

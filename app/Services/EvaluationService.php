@@ -30,6 +30,18 @@ class EvaluationService
             ->values();
     }
 
+    /**
+     * Năm học mặc định khi mở trang chưa chọn năm: ưu tiên năm học gần nhất đã có tiêu chí
+     * (nơi đang có dữ liệu tự chấm/thẩm định thật), chỉ dùng năm học hiện tại làm mặc định khi
+     * hệ thống hoàn toàn chưa có tiêu chí nào (cài đặt mới).
+     */
+    public function defaultAcademicYear(): string
+    {
+        $latestWithCriteria = EvaluationCriterion::query()->orderByDesc('academic_year')->value('academic_year');
+
+        return $latestWithCriteria ?: AcademicYear::forDate(now());
+    }
+
     public function classify(?float $score): string
     {
         if ($score === null) {
