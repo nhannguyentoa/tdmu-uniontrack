@@ -31,12 +31,26 @@ class EvaluationService
     }
 
     /**
-     * Năm học mặc định khi mở trang chưa chọn năm: ưu tiên năm học gần nhất đã có tiêu chí
-     * (nơi đang có dữ liệu tự chấm/thẩm định thật), chỉ dùng năm học hiện tại làm mặc định khi
-     * hệ thống hoàn toàn chưa có tiêu chí nào (cài đặt mới).
+     * Năm học mặc định khi mở trang chưa chọn năm: ưu tiên năm học gần nhất đã có điểm tự chấm/thẩm định
+     * thật (nơi đang có dữ liệu thật), rồi mới đến năm học gần nhất đã có tiêu chí (nhưng chưa ai chấm điểm,
+     * ví dụ vừa sao chép tiêu chí sang năm mới), chỉ dùng năm học hiện tại làm mặc định khi hệ thống hoàn
+     * toàn chưa có tiêu chí nào (cài đặt mới).
      */
     public function defaultAcademicYear(): string
     {
+        $latestScored = EvaluationScore::query()
+            ->join('evaluation_criteria', 'evaluation_criteria.id', '=', 'evaluation_scores.evaluation_criterion_id')
+            ->where(function ($query) {
+                $query->whereNotNull('evaluation_scores.self_score')
+                    ->orWhereNotNull('evaluation_scores.verified_score');
+            })
+            ->orderByDesc('evaluation_criteria.academic_year')
+            ->value('evaluation_criteria.academic_year');
+
+        if ($latestScored) {
+            return $latestScored;
+        }
+
         $latestWithCriteria = EvaluationCriterion::query()->orderByDesc('academic_year')->value('academic_year');
 
         return $latestWithCriteria ?: AcademicYear::forDate(now());

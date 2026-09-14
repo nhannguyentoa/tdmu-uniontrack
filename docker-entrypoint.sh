@@ -18,6 +18,9 @@ php artisan app:sync-real-union-groups
 echo "-- Seed du lieu cho tinh nang moi: Ban chuyen mon, tieu chi thi dua, ke hoach hoat dong --"
 php artisan app:seed-new-features
 
+echo "-- Sao chep tieu chi thi dua sang nam hoc hien tai neu chua co (an toan chay lai nhieu lan) --"
+php artisan app:seed-evaluation-criteria
+
 php artisan storage:link || true
 
 php artisan config:cache

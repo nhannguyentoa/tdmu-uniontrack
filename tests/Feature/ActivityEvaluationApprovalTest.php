@@ -144,4 +144,34 @@ class ActivityEvaluationApprovalTest extends TestCase
 
         $this->assertSame($currentYear, $default);
     }
+
+    public function test_default_academic_year_prefers_scored_year_even_when_a_newer_year_only_has_copied_criteria(): void
+    {
+        $oldCriterion = \App\Models\EvaluationCriterion::create([
+            'academic_year' => '2025-2026',
+            'group_label' => 'I',
+            'order_no' => 1,
+            'content' => 'Tiêu chí kiểm thử',
+            'max_score' => 5,
+            'department_id' => null,
+        ]);
+        \App\Models\EvaluationCriterion::create([
+            'academic_year' => '2026-2027',
+            'group_label' => 'I',
+            'order_no' => 1,
+            'content' => 'Tiêu chí kiểm thử (bản sao)',
+            'max_score' => 5,
+            'department_id' => null,
+        ]);
+        $group = \App\Models\UnionGroup::factory()->create();
+        \App\Models\EvaluationScore::create([
+            'evaluation_criterion_id' => $oldCriterion->id,
+            'union_group_id' => $group->id,
+            'self_score' => 4.5,
+        ]);
+
+        $default = app(EvaluationService::class)->defaultAcademicYear();
+
+        $this->assertSame('2025-2026', $default);
+    }
 }
