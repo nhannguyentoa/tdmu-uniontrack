@@ -25,4 +25,13 @@ interface AiProvider
      * @throws AiException
      */
     public function draftDocument(DocumentRequest $request): TextResult;
+
+    /**
+     * Trả lời câu hỏi tiếng Việt về dữ liệu hệ thống bằng cách gọi các công cụ tra cứu chỉ-đọc trong $tools.
+     *
+     * @param  list<array{role: string, text: string}>  $history  lượt hỏi đáp trước đó (role: user | assistant)
+     *
+     * @throws AiException
+     */
+    public function chat(string $question, array $history, DataTools $tools): ChatResult;
 }

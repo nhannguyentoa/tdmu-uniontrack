@@ -5,6 +5,7 @@ use App\Http\Controllers\ActivityEvidenceController;
 use App\Http\Controllers\ActivityParticipantController;
 use App\Http\Controllers\ActivityPlanController;
 use App\Http\Controllers\ActivityTypeController;
+use App\Http\Controllers\AiAssistantController;
 use App\Http\Controllers\AiDocumentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EvaluationCriterionController;
@@ -111,6 +112,8 @@ Route::middleware('auth')->group(function () {
     Route::get('reports/export/pdf', [ReportController::class, 'exportPdf'])->name('reports.export.pdf');
 
     // Trợ lý soạn văn bản bằng AI
+    Route::get('ai/assistant', [AiAssistantController::class, 'index'])->name('ai.assistant');
+    Route::post('ai/assistant', [AiAssistantController::class, 'ask'])->middleware('throttle:30,1')->name('ai.assistant.ask');
     Route::get('ai/documents', [AiDocumentController::class, 'create'])->name('ai.documents.create');
     Route::post('ai/documents', [AiDocumentController::class, 'generate'])->middleware('throttle:20,1')->name('ai.documents.generate');
     Route::post('ai/documents/download', [AiDocumentController::class, 'download'])->name('ai.documents.download');

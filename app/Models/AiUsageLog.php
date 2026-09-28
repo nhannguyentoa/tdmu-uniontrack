@@ -14,6 +14,7 @@ class AiUsageLog extends Model
 {
     public const FEATURE_ATTENDANCE = 'attendance_import';
     public const FEATURE_DOCUMENT = 'document_draft';
+    public const FEATURE_QA = 'data_qa';
 
     protected function casts(): array
     {

@@ -61,6 +61,11 @@ final class MockProvider implements AiProvider
         return new TextResult(DocumentTemplates::render($request->type, $request->facts), $this->name(), $this->model());
     }
 
+    public function chat(string $question, array $history, DataTools $tools): ChatResult
+    {
+        return (new MockAssistant())->answer($question, $tools);
+    }
+
     /** Thay một chữ cái ở giữa tên (sau khi bỏ dấu) để mô phỏng lỗi đọc chữ của OCR. */
     private function misread(string $name): string
     {
