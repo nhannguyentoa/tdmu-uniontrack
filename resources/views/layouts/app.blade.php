@@ -53,6 +53,7 @@
                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
                             <span class="hidden sm:inline">Hỏi đáp AI</span>
                         </a>
+                        <x-notification-bell />
                         <div class="hidden text-right sm:block">
                             <p class="text-sm font-medium text-slate-700">{{ auth()->user()->name }}</p>
                             <p class="text-xs text-slate-400">

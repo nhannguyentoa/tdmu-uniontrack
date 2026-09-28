@@ -12,6 +12,7 @@ use App\Http\Controllers\EvaluationCriterionController;
 use App\Http\Controllers\EvaluationScoreController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MemberEvaluationController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ParticipantImportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
@@ -25,6 +26,8 @@ Route::get('/', function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
