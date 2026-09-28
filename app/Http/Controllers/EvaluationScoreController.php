@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Exports\EvaluationReportExport;
-use App\Models\AiEvaluationSuggestion;
 use App\Models\Department;
 use App\Models\EvaluationCriterion;
 use App\Models\EvaluationScore;
@@ -42,15 +41,9 @@ class EvaluationScoreController extends Controller
         $bonusActivities = $evaluationService->activitiesForBonus($unionGroup->id, $academicYear);
         $bonusEarned = min($evaluationService->activityEarnedScore($unionGroup->id, $academicYear), (float) $bonusCriterion->max_score);
 
-        $aiSuggestions = AiEvaluationSuggestion::where('union_group_id', $unionGroup->id)
-            ->whereIn('evaluation_criterion_id', $criteria->pluck('id'))
-            ->where('provider', config('ai.provider'))
-            ->get()
-            ->keyBy('evaluation_criterion_id');
-
         return view('evaluation.self-edit', compact(
             'unionGroup', 'criteria', 'scores', 'academicYear', 'academicYears',
-            'bonusCriterion', 'bonusActivities', 'bonusEarned', 'aiSuggestions'
+            'bonusCriterion', 'bonusActivities', 'bonusEarned'
         ));
     }
 
@@ -111,13 +104,8 @@ class EvaluationScoreController extends Controller
 
         $academicYears = $evaluationService->academicYears();
 
-        $aiSuggestions = AiEvaluationSuggestion::whereIn('evaluation_criterion_id', $criteria->pluck('id'))
-            ->where('provider', config('ai.provider'))
-            ->get()
-            ->keyBy(fn (AiEvaluationSuggestion $s) => $s->evaluation_criterion_id.'-'.$s->union_group_id);
-
         return view('evaluation.verify-edit', compact(
-            'criteria', 'unionGroups', 'scores', 'departments', 'departmentId', 'academicYear', 'academicYears', 'aiSuggestions'
+            'criteria', 'unionGroups', 'scores', 'departments', 'departmentId', 'academicYear', 'academicYears'
         ));
     }
 
