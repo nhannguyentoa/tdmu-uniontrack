@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\AiEvaluationController;
 use App\Http\Controllers\ActivityEvidenceController;
 use App\Http\Controllers\ActivityParticipantController;
 use App\Http\Controllers\ActivityPlanController;
@@ -92,6 +93,10 @@ Route::middleware('auth')->group(function () {
     Route::get('evaluation/report/export', [EvaluationScoreController::class, 'exportExcel'])->name('evaluation.report.export');
     Route::get('evaluation/verify', [EvaluationScoreController::class, 'editVerify'])->name('evaluation.verify.edit');
     Route::put('evaluation/verify', [EvaluationScoreController::class, 'updateVerify'])->name('evaluation.verify.update');
+    Route::post('evaluation/ai/suggest/{evaluation_criterion}/{union_group}', [AiEvaluationController::class, 'suggest'])
+        ->middleware('throttle:60,1')->name('evaluation.ai.suggest');
+    Route::post('evaluation/ai/precheck/{evaluation_criterion}/{union_group}', [AiEvaluationController::class, 'precheck'])
+        ->middleware('throttle:60,1')->name('evaluation.ai.precheck');
     Route::get('evaluation/{union_group}/self', [EvaluationScoreController::class, 'editSelf'])->name('evaluation.self.edit');
     Route::put('evaluation/{union_group}/self', [EvaluationScoreController::class, 'updateSelf'])->name('evaluation.self.update');
     Route::get('evaluation/{union_group}/members', [MemberEvaluationController::class, 'edit'])->name('evaluation.members.edit');

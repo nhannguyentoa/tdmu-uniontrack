@@ -73,6 +73,11 @@
         @endif
     </x-card>
 
+    <div class="mb-4 rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-xs text-indigo-800">
+        Nút "AI kiểm tra trước" cho biết tổ đã đủ minh chứng cho từng tiêu chí chưa và còn thiếu gì, giúp bạn bổ sung trước khi nộp.
+        AI chỉ đọc hoạt động và minh chứng của tổ trong hệ thống, không gửi tên đoàn viên, và không tự điền điểm thay bạn.
+    </div>
+
     <form method="POST" action="{{ route('evaluation.self.update', $unionGroup) }}">
         @csrf
         @method('PUT')
@@ -116,6 +121,9 @@
                                                    value="{{ old('scores.'.$criterion->id.'.self_note', $score?->self_note) }}"
                                                    placeholder="Giải trình (nếu có)"
                                                    class="block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                            <x-ai-suggest-cell class="mt-2" mode="precheck"
+                                                :url="route('evaluation.ai.precheck', [$criterion, $unionGroup])"
+                                                :initial="$aiSuggestions->get($criterion->id)?->toPayload(auth()->user()->isAdmin())" />
                                         </td>
                                     @endif
                                 </tr>
