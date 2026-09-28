@@ -48,18 +48,85 @@
     </div>
 
     <div>
-        <x-input-label for="status" value="Trạng thái *" />
-        <select id="status" name="status" class="mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
-            @foreach(\App\Models\ActivityPlan::STATUSES as $key => $label)
-                <option value="{{ $key }}" @selected(old('status', $p?->status ?? 'planned') === $key)>{{ $label }}</option>
+        <x-input-label for="activity_type_id" value="Loại hoạt động" />
+        <select id="activity_type_id" name="activity_type_id" class="mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            <option value="">-- Chưa xác định --</option>
+            @foreach($activityTypes as $type)
+                <option value="{{ $type->id }}" @selected((string) old('activity_type_id', $p?->activity_type_id) === (string) $type->id)>{{ $type->name }}</option>
             @endforeach
         </select>
-        <x-input-error :messages="$errors->get('status')" class="mt-1" />
+        <x-input-error :messages="$errors->get('activity_type_id')" class="mt-1" />
     </div>
 
     <div class="sm:col-span-2">
         <x-input-label for="note" value="Ghi chú" />
         <textarea id="note" name="note" rows="2" class="mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('note', $p?->note) }}</textarea>
         <x-input-error :messages="$errors->get('note')" class="mt-1" />
+    </div>
+
+    <div class="sm:col-span-2 rounded-lg border border-slate-200 p-4" x-data="{ counts: {{ old('counts_for_evaluation', $p?->counts_for_evaluation ?? false) ? 'true' : 'false' }} }">
+        <label class="flex items-center gap-2 text-sm font-medium text-slate-700">
+            <input type="checkbox" name="counts_for_evaluation" value="1" x-model="counts"
+                   @checked(old('counts_for_evaluation', $p?->counts_for_evaluation)) class="rounded border-slate-300 text-blue-600">
+            Hoạt động này có tính điểm thi đua
+        </label>
+        <p class="mt-1 text-xs text-slate-500">Thông tin này sẽ được điền sẵn khi chuyển kế hoạch thành hoạt động.</p>
+        <div x-show="counts" x-cloak class="mt-3 max-w-xs">
+            <x-input-label for="evaluation_max_score" value="Điểm thi đua tối đa *" />
+            <x-text-input id="evaluation_max_score" name="evaluation_max_score" type="number" min="0.5" max="50" step="0.5" class="mt-1 block w-full" :value="old('evaluation_max_score', $p?->evaluation_max_score)" />
+            <x-input-error :messages="$errors->get('evaluation_max_score')" class="mt-1" />
+        </div>
+    </div>
+
+    @php
+        $phoiHopIds = old('collaborating_groups.phoi_hop', $p?->collaboratingGroups->where('pivot.role', 'phoi_hop')->pluck('id')->all() ?? []);
+        $thamGiaIds = old('collaborating_groups.tham_gia', $p?->collaboratingGroups->where('pivot.role', 'tham_gia')->pluck('id')->all() ?? []);
+    @endphp
+
+    <div class="sm:col-span-2">
+        <x-input-label value="Tổ phối hợp tổ chức (ngoài đơn vị đăng cai)" />
+        <div class="mt-1 grid grid-cols-2 gap-2 rounded-lg border border-slate-200 p-3 sm:grid-cols-3">
+            @foreach($unionGroups as $group)
+                <label class="flex items-center gap-2 text-sm">
+                    <input type="checkbox" name="collaborating_groups[phoi_hop][]" value="{{ $group->id }}"
+                           @checked(collect($phoiHopIds)->contains($group->id))
+                           class="rounded border-slate-300 text-blue-600">
+                    {{ $group->name }}
+                </label>
+            @endforeach
+        </div>
+        <x-input-error :messages="$errors->get('collaborating_groups')" class="mt-1" />
+    </div>
+
+    <div class="sm:col-span-2">
+        <x-input-label value="Tổ tham gia (không đứng ra tổ chức)" />
+        <div class="mt-1 grid grid-cols-2 gap-2 rounded-lg border border-slate-200 p-3 sm:grid-cols-3">
+            @foreach($unionGroups as $group)
+                <label class="flex items-center gap-2 text-sm">
+                    <input type="checkbox" name="collaborating_groups[tham_gia][]" value="{{ $group->id }}"
+                           @checked(collect($thamGiaIds)->contains($group->id))
+                           class="rounded border-slate-300 text-blue-600">
+                    {{ $group->name }}
+                </label>
+            @endforeach
+        </div>
+    </div>
+
+    <div class="sm:col-span-2">
+        @if($p?->activity)
+            <div class="rounded-lg border border-sky-200 bg-sky-50 p-3 text-sm text-sky-800">
+                Kế hoạch này đã được chuyển thành hoạt động
+                <a href="{{ route('activities.show', $p->activity) }}" class="font-medium underline">{{ $p->activity->code }}</a>
+                — trạng thái kế hoạch được đồng bộ theo trạng thái của hoạt động.
+            </div>
+        @else
+            <label class="flex items-center gap-2 text-sm font-medium text-slate-700">
+                <input type="hidden" name="is_cancelled" value="0">
+                <input type="checkbox" name="is_cancelled" value="1"
+                       @checked(old('is_cancelled', $p?->isCancelled())) class="rounded border-slate-300 text-red-600">
+                Đánh dấu kế hoạch này đã hủy (không tổ chức nữa)
+            </label>
+            <p class="mt-1 text-xs text-slate-500">Trạng thái kế hoạch tự động: "Dự kiến" khi tháng kế hoạch chưa qua, "Quá hạn" khi đã qua mà chưa chuyển thành hoạt động.</p>
+        @endif
     </div>
 </div>

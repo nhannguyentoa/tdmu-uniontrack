@@ -35,6 +35,16 @@ class AcademicYear
     }
 
     /**
+     * Ngày đầu tiên của một tháng trong năm học dạng "2026-2027" (tháng 8-12 thuộc năm đầu, tháng 1-7 thuộc năm sau).
+     */
+    public static function monthStart(string $academicYear, int $month): Carbon
+    {
+        $startYear = (int) strtok($academicYear, '-');
+
+        return Carbon::create($month >= 8 ? $startYear : $startYear + 1, $month, 1, 0, 0, 0);
+    }
+
+    /**
      * Thứ tự tháng trong năm học (tháng 8 là tháng đầu tiên, tháng 7 năm sau là tháng cuối).
      */
     public static function monthOrder(int $month): int

@@ -175,6 +175,24 @@ class Activity extends Model
         return $this->counts_for_evaluation && $this->status === self::STATUS_COMPLETED;
     }
 
+    /**
+     * Mã hoạt động gợi ý tiếp theo dạng HD-{năm}-{số thứ tự 4 chữ số}, tính cả hoạt động đã xóa mềm
+     * (mã có ràng buộc duy nhất nên không được tái sử dụng).
+     */
+    public static function suggestNextCode(?int $year = null): string
+    {
+        $year ??= now()->year;
+        $prefix = "HD-{$year}-";
+
+        $max = static::withTrashed()
+            ->where('code', 'like', $prefix.'%')
+            ->pluck('code')
+            ->map(fn (string $code) => (int) substr($code, strlen($prefix)))
+            ->max() ?? 0;
+
+        return $prefix.str_pad((string) ($max + 1), 4, '0', STR_PAD_LEFT);
+    }
+
     public function academicYear(): string
     {
         return AcademicYear::forDate($this->start_time);

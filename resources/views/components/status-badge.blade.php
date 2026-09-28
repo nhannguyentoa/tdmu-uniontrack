@@ -7,6 +7,8 @@
         'in_progress' => ['label' => 'Đang thực hiện', 'class' => 'bg-amber-100 text-amber-700'],
         'completed' => ['label' => 'Đã hoàn thành', 'class' => 'bg-green-100 text-green-700'],
         'cancelled' => ['label' => 'Đã hủy', 'class' => 'bg-red-100 text-red-700'],
+        'planned' => ['label' => 'Dự kiến', 'class' => 'bg-slate-100 text-slate-600'],
+        'overdue' => ['label' => 'Quá hạn', 'class' => 'bg-red-100 text-red-700'],
         'active' => ['label' => 'Đang hoạt động', 'class' => 'bg-green-100 text-green-700'],
         'inactive' => ['label' => 'Ngưng hoạt động', 'class' => 'bg-slate-100 text-slate-600'],
         'transferred' => ['label' => 'Đã chuyển', 'class' => 'bg-amber-100 text-amber-700'],

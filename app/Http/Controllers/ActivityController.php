@@ -7,6 +7,7 @@ use App\Http\Requests\Activities\QuickUpdateActivityRequest;
 use App\Http\Requests\Activities\StoreActivityRequest;
 use App\Http\Requests\Activities\UpdateActivityRequest;
 use App\Models\Activity;
+use App\Models\ActivityPlan;
 use App\Models\ActivityType;
 use App\Models\UnionGroup;
 use App\Models\User;
@@ -65,9 +66,21 @@ class ActivityController extends Controller
         return $query;
     }
 
-    public function create(Request $request): View
+    public function create(Request $request): View|RedirectResponse
     {
         $this->authorize('create', Activity::class);
+
+        $plan = null;
+        if ($request->filled('from_activity_plan_id')) {
+            $plan = ActivityPlan::with('collaboratingGroups')->find($request->integer('from_activity_plan_id'));
+
+            if (! $plan || $plan->activity_id !== null || $plan->isCancelled()) {
+                return redirect()->route('activity-plans.index')
+                    ->with('error', 'Kế hoạch này không thể chuyển thành hoạt động (không tồn tại, đã được chuyển hoặc đã hủy).');
+            }
+        }
+
+        $suggestedCode = Activity::suggestNextCode($plan?->monthStart()->year);
 
         $unionGroups = $request->user()->isOfficer()
             ? $request->user()->managedUnionGroups()->orderBy('name')->get()
@@ -76,7 +89,7 @@ class ActivityController extends Controller
         $activityTypes = ActivityType::where('is_active', true)->orderBy('name')->get();
         $users = User::whereIn('role', ['admin', 'officer'])->orderBy('name')->get();
 
-        return view('activities.create', compact('unionGroups', 'allUnionGroups', 'activityTypes', 'users'));
+        return view('activities.create', compact('unionGroups', 'allUnionGroups', 'activityTypes', 'users', 'plan', 'suggestedCode'));
     }
 
     public function store(StoreActivityRequest $request): RedirectResponse
@@ -92,9 +105,10 @@ class ActivityController extends Controller
         $this->syncCollaboratingGroups($activity, $collaboratingGroups);
 
         if ($fromActivityPlanId) {
-            \App\Models\ActivityPlan::whereKey($fromActivityPlanId)
+            // Chỉ gắn kế hoạch vào hoạt động; trạng thái kế hoạch tự đồng bộ theo hoạt động (ActivityPlan::displayStatusKey).
+            ActivityPlan::whereKey($fromActivityPlanId)
                 ->whereNull('activity_id')
-                ->update(['activity_id' => $activity->id, 'status' => \App\Models\ActivityPlan::STATUS_DONE]);
+                ->update(['activity_id' => $activity->id]);
         }
 
         $activity->statusHistories()->create([
@@ -211,6 +225,9 @@ class ActivityController extends Controller
         foreach ($activity->evidences as $evidence) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($evidence->file_path);
         }
+
+        // Kế hoạch đã chuyển thành hoạt động này quay lại trạng thái chưa chuyển (Dự kiến / Quá hạn).
+        ActivityPlan::where('activity_id', $activity->id)->update(['activity_id' => null]);
 
         $activity->delete();
 

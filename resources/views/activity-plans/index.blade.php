@@ -36,25 +36,27 @@
                             <tbody class="divide-y divide-slate-100">
                                 @foreach($items as $plan)
                                     <tr class="hover:bg-slate-50">
-                                        <td class="px-5 py-3 font-medium text-slate-700">{{ $plan->title }}</td>
+                                        <td class="px-5 py-3 font-medium text-slate-700">
+                                            {{ $plan->title }}
+                                            @if($plan->activityType)
+                                                <div class="mt-0.5 text-xs font-normal text-slate-400">{{ $plan->activityType->name }}</div>
+                                            @endif
+                                            @if($plan->counts_for_evaluation)
+                                                <div class="mt-0.5 text-xs font-normal text-blue-600">Tính điểm thi đua (tối đa {{ rtrim(rtrim($plan->evaluation_max_score, '0'), '.') }})</div>
+                                            @endif
+                                        </td>
                                         <td class="px-5 py-3 text-slate-500">{{ $plan->hostUnionGroup?->name ?: '—' }}</td>
                                         <td class="px-5 py-3 text-slate-500">{{ $plan->department?->name ?: '—' }}</td>
                                         <td class="px-5 py-3 text-slate-500">{{ \Illuminate\Support\Str::limit($plan->note, 50) ?: '—' }}</td>
                                         <td class="px-5 py-3">
-                                            <span @class([
-                                                'inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium',
-                                                'bg-green-100 text-green-700' => $plan->status === 'done',
-                                                'bg-yellow-100 text-yellow-700' => $plan->status === 'in_progress',
-                                                'bg-slate-100 text-slate-600' => $plan->status === 'planned',
-                                                'bg-red-100 text-red-700' => $plan->status === 'cancelled',
-                                            ])>{{ $plan->statusLabel() }}</span>
+                                            <x-status-badge :status="$plan->displayStatusKey()" />
                                         </td>
                                         <td class="px-5 py-3">
                                             <div class="flex justify-end gap-1">
                                                 @if($plan->activity)
                                                     <x-btn href="{{ route('activities.show', $plan->activity) }}" variant="ghost">Xem hoạt động</x-btn>
-                                                @elseif(auth()->user()->can('update', $plan))
-                                                    <x-btn href="{{ route('activities.create', ['from_activity_plan_id' => $plan->id, 'name' => $plan->title, 'union_group_id' => $plan->host_union_group_id]) }}" variant="ghost">Chuyển thành hoạt động</x-btn>
+                                                @elseif(! $plan->isCancelled() && auth()->user()->can('update', $plan))
+                                                    <x-btn href="{{ route('activities.create', ['from_activity_plan_id' => $plan->id]) }}" variant="ghost">Chuyển thành hoạt động</x-btn>
                                                 @endif
                                                 @can('update', $plan)
                                                     <x-btn href="{{ route('activity-plans.edit', $plan) }}" variant="ghost">Sửa</x-btn>

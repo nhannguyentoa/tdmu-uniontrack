@@ -88,10 +88,7 @@ class ActivityPlanTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        $this->assertDatabaseHas('activity_plans', [
-            'id' => $plan->id,
-            'status' => 'done',
-        ]);
+        $this->assertSame('planned', $plan->fresh()->status);
         $this->assertNotNull($plan->fresh()->activity_id);
     }
 }

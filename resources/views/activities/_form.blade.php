@@ -1,17 +1,19 @@
 @php
     $a = $activity ?? null;
+    $plan = $plan ?? null;
+    $suggestedCode = $suggestedCode ?? null;
 @endphp
 
 <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
     <div>
         <x-input-label for="code" value="Mã hoạt động *" />
-        <x-text-input id="code" name="code" class="mt-1 block w-full" :value="old('code', $a?->code)" required />
+        <x-text-input id="code" name="code" class="mt-1 block w-full" :value="old('code', $a?->code ?? $suggestedCode)" required />
         <x-input-error :messages="$errors->get('code')" class="mt-1" />
     </div>
 
     <div>
         <x-input-label for="name" value="Tên hoạt động *" />
-        <x-text-input id="name" name="name" class="mt-1 block w-full" :value="old('name', $a?->name ?? request('name'))" required />
+        <x-text-input id="name" name="name" class="mt-1 block w-full" :value="old('name', $a?->name ?? $plan?->title ?? request('name'))" required />
         <x-input-error :messages="$errors->get('name')" class="mt-1" />
     </div>
 
@@ -20,7 +22,7 @@
         <select id="union_group_id" name="union_group_id" class="mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
             <option value="">-- Chọn tổ công đoàn --</option>
             @foreach($unionGroups as $group)
-                <option value="{{ $group->id }}" @selected((string) old('union_group_id', $a?->union_group_id ?? request('union_group_id')) === (string) $group->id)>{{ $group->name }}</option>
+                <option value="{{ $group->id }}" @selected((string) old('union_group_id', $a?->union_group_id ?? $plan?->host_union_group_id ?? request('union_group_id')) === (string) $group->id)>{{ $group->name }}</option>
             @endforeach
         </select>
         <x-input-error :messages="$errors->get('union_group_id')" class="mt-1" />
@@ -31,7 +33,7 @@
         <select id="activity_type_id" name="activity_type_id" class="mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
             <option value="">-- Chọn loại hoạt động --</option>
             @foreach($activityTypes as $type)
-                <option value="{{ $type->id }}" @selected((string) old('activity_type_id', $a?->activity_type_id) === (string) $type->id)>{{ $type->name }}</option>
+                <option value="{{ $type->id }}" @selected((string) old('activity_type_id', $a?->activity_type_id ?? $plan?->activity_type_id) === (string) $type->id)>{{ $type->name }}</option>
             @endforeach
         </select>
         <x-input-error :messages="$errors->get('activity_type_id')" class="mt-1" />
@@ -120,29 +122,30 @@
         <x-input-error :messages="$errors->get('budget')" class="mt-1" />
     </div>
 
-    <div class="sm:col-span-2 rounded-lg border border-slate-200 p-4" x-data="{ counts: {{ old('counts_for_evaluation', $a?->counts_for_evaluation ?? false) ? 'true' : 'false' }} }">
+    <div class="sm:col-span-2 rounded-lg border border-slate-200 p-4" x-data="{ counts: {{ old('counts_for_evaluation', $a?->counts_for_evaluation ?? $plan?->counts_for_evaluation ?? false) ? 'true' : 'false' }} }">
         <label class="flex items-center gap-2 text-sm font-medium text-slate-700">
             <input type="checkbox" name="counts_for_evaluation" value="1" x-model="counts"
-                   @checked(old('counts_for_evaluation', $a?->counts_for_evaluation)) class="rounded border-slate-300 text-blue-600">
+                   @checked(old('counts_for_evaluation', $a?->counts_for_evaluation ?? $plan?->counts_for_evaluation)) class="rounded border-slate-300 text-blue-600">
             Hoạt động này có tính điểm thi đua
         </label>
         <p class="mt-1 text-xs text-slate-500">Nếu chọn, điểm sẽ tự động hiện trong phần Chấm điểm thi đua của tổ chủ trì khi hoạt động Đã hoàn thành — điểm đạt được = điểm tối đa × tiến độ.</p>
         <div x-show="counts" x-cloak class="mt-3 max-w-xs">
             <x-input-label for="evaluation_max_score" value="Điểm thi đua tối đa *" />
-            <x-text-input id="evaluation_max_score" name="evaluation_max_score" type="number" min="0.5" max="50" step="0.5" class="mt-1 block w-full" :value="old('evaluation_max_score', $a?->evaluation_max_score)" />
+            <x-text-input id="evaluation_max_score" name="evaluation_max_score" type="number" min="0.5" max="50" step="0.5" class="mt-1 block w-full" :value="old('evaluation_max_score', $a?->evaluation_max_score ?? $plan?->evaluation_max_score)" />
             <x-input-error :messages="$errors->get('evaluation_max_score')" class="mt-1" />
         </div>
     </div>
 
     <div class="sm:col-span-2">
         <x-input-label for="note" value="Ghi chú" />
-        <textarea id="note" name="note" rows="2" class="mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('note', $a?->note) }}</textarea>
+        <textarea id="note" name="note" rows="2" class="mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('note', $a?->note ?? $plan?->note) }}</textarea>
         <x-input-error :messages="$errors->get('note')" class="mt-1" />
     </div>
 
     @php
-        $phoiHopIds = old('collaborating_groups.phoi_hop', $a?->collaboratingGroups->where('pivot.role', 'phoi_hop')->pluck('id')->all() ?? []);
-        $thamGiaIds = old('collaborating_groups.tham_gia', $a?->collaboratingGroups->where('pivot.role', 'tham_gia')->pluck('id')->all() ?? []);
+        $collabSource = $a?->collaboratingGroups ?? $plan?->collaboratingGroups;
+        $phoiHopIds = old('collaborating_groups.phoi_hop', $collabSource?->where('pivot.role', 'phoi_hop')->pluck('id')->all() ?? []);
+        $thamGiaIds = old('collaborating_groups.tham_gia', $collabSource?->where('pivot.role', 'tham_gia')->pluck('id')->all() ?? []);
     @endphp
 
     <div class="sm:col-span-2">
