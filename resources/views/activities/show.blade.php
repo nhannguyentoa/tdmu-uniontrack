@@ -16,8 +16,10 @@
             </div>
             <p class="text-sm text-slate-500">Mã hoạt động: {{ $activity->code }} · {{ $activity->unionGroup?->name }} · {{ $activity->activityType?->name }}</p>
         </div>
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
+            <x-btn href="{{ route('ai.documents.create', ['type' => 'activity_summary', 'activity_id' => $activity->id]) }}" variant="secondary">Soạn báo cáo (AI)</x-btn>
             @can('update', $activity)
+                <x-btn href="{{ route('ai.documents.create', ['type' => 'invitation', 'activity_id' => $activity->id]) }}" variant="secondary">Soạn thông báo (AI)</x-btn>
                 <x-btn href="{{ route('activities.edit', $activity) }}" variant="secondary">Chỉnh sửa</x-btn>
             @endcan
             @can('delete', $activity)
@@ -113,6 +115,7 @@
                     <div class="flex gap-2">
                         <x-btn href="{{ route('activities.participants.export', $activity) }}" variant="ghost">Xuất Excel</x-btn>
                         @if($canManageParticipants)
+                            <x-btn href="{{ route('activities.participants.import', $activity) }}" variant="secondary">Nhập từ ảnh (AI)</x-btn>
                             <x-btn href="{{ route('activities.participants.create', $activity) }}" variant="secondary">+ Thêm người tham gia</x-btn>
                         @endif
                     </div>

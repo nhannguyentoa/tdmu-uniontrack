@@ -5,11 +5,13 @@ use App\Http\Controllers\ActivityEvidenceController;
 use App\Http\Controllers\ActivityParticipantController;
 use App\Http\Controllers\ActivityPlanController;
 use App\Http\Controllers\ActivityTypeController;
+use App\Http\Controllers\AiDocumentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EvaluationCriterionController;
 use App\Http\Controllers\EvaluationScoreController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MemberEvaluationController;
+use App\Http\Controllers\ParticipantImportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UnionGroupController;
@@ -66,6 +68,9 @@ Route::middleware('auth')->group(function () {
     // Người tham gia hoạt động
     Route::get('activities/{activity}/participants/create', [ActivityParticipantController::class, 'create'])->name('activities.participants.create');
     Route::post('activities/{activity}/participants', [ActivityParticipantController::class, 'store'])->name('activities.participants.store');
+    Route::get('activities/{activity}/participants/import', [ParticipantImportController::class, 'create'])->name('activities.participants.import');
+    Route::post('activities/{activity}/participants/import', [ParticipantImportController::class, 'analyze'])->middleware('throttle:20,1')->name('activities.participants.import.analyze');
+    Route::post('activities/{activity}/participants/import/confirm', [ParticipantImportController::class, 'confirm'])->name('activities.participants.import.confirm');
     Route::get('activities/{activity}/participants/export', [ActivityParticipantController::class, 'export'])->name('activities.participants.export');
     Route::delete('activities/{activity}/participants/{participant}', [ActivityParticipantController::class, 'destroy'])->name('activities.participants.destroy');
 
@@ -104,6 +109,11 @@ Route::middleware('auth')->group(function () {
     Route::get('reports/year', [ReportController::class, 'year'])->name('reports.year');
     Route::get('reports/export/excel', [ReportController::class, 'exportExcel'])->name('reports.export.excel');
     Route::get('reports/export/pdf', [ReportController::class, 'exportPdf'])->name('reports.export.pdf');
+
+    // Trợ lý soạn văn bản bằng AI
+    Route::get('ai/documents', [AiDocumentController::class, 'create'])->name('ai.documents.create');
+    Route::post('ai/documents', [AiDocumentController::class, 'generate'])->middleware('throttle:20,1')->name('ai.documents.generate');
+    Route::post('ai/documents/download', [AiDocumentController::class, 'download'])->name('ai.documents.download');
 
     // Quản lý tài khoản (chỉ Admin)
     Route::middleware('role:admin')->group(function () {
