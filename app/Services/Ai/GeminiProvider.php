@@ -79,6 +79,7 @@ final class GeminiProvider implements AiProvider
         try {
             $response = Http::withHeaders(['x-goog-api-key' => $this->key])
                 ->timeout(config('ai.timeout'))
+                ->withOptions(['verify' => config('ai.ca_bundle') ?: true])
                 ->acceptJson()
                 ->post("https://generativelanguage.googleapis.com/v1beta/models/{$this->model}:generateContent", $payload);
         } catch (ConnectionException) {

@@ -18,5 +18,8 @@ return [
     // Ngưỡng độ giống tên (0-1) để tự chọn đoàn viên khi AI đọc sai chính tả.
     'fuzzy_threshold' => (float) env('AI_FUZZY_THRESHOLD', 0.85),
 
+    // Đường dẫn bộ chứng chỉ CA (.pem/.crt) khi PHP trên Windows báo lỗi "unable to get local issuer certificate". Để trống = dùng mặc định.
+    'ca_bundle' => env('AI_CA_BUNDLE'),
+
     'timeout' => (int) env('AI_TIMEOUT', 90),
 ];
