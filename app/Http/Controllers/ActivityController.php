@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ActivitiesExport;
+use App\Exports\UnionActivityReportExport;
 use App\Http\Requests\Activities\QuickUpdateActivityRequest;
 use App\Http\Requests\Activities\StoreActivityRequest;
 use App\Http\Requests\Activities\UpdateActivityRequest;
@@ -11,14 +12,17 @@ use App\Models\ActivityPlan;
 use App\Models\ActivityType;
 use App\Models\UnionGroup;
 use App\Models\User;
+use App\Services\EvaluationService;
+use App\Support\AcademicYear;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ActivityController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, EvaluationService $evaluation): View
     {
         $this->authorize('viewAny', Activity::class);
 
@@ -26,8 +30,9 @@ class ActivityController extends Controller
 
         $unionGroups = UnionGroup::orderBy('name')->get();
         $activityTypes = ActivityType::where('is_active', true)->orderBy('name')->get();
+        $academicYears = $request->user()->isAdmin() ? $evaluation->academicYears() : collect();
 
-        return view('activities.index', compact('activities', 'unionGroups', 'activityTypes'));
+        return view('activities.index', compact('activities', 'unionGroups', 'activityTypes', 'academicYears'));
     }
 
     public function export(Request $request)
@@ -37,6 +42,40 @@ class ActivityController extends Controller
         $activities = $this->filteredQuery($request)->get();
 
         return Excel::download(new ActivitiesExport($activities), 'danh-sach-hoat-dong.xlsx');
+    }
+
+    /**
+     * Xuất toàn bộ hoạt động của một năm học theo đúng mẫu báo cáo nộp lên Liên đoàn Lao động
+     * (gom nhóm theo Loại hoạt động). Chỉ Quản trị viên dùng được, vì phạm vi là toàn trường.
+     */
+    public function exportUnionReport(Request $request)
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+
+        $request->validate(['academic_year' => ['required', 'regex:/^\d{4}-\d{4}$/']]);
+        $academicYear = $request->string('academic_year')->toString();
+        [$from, $to] = AcademicYear::dateRange($academicYear);
+
+        $activityTypes = ActivityType::orderBy('name')->get();
+
+        $activities = Activity::query()
+            ->with('evidences')
+            ->whereBetween('start_time', [$from, $to])
+            ->orderBy('start_time')
+            ->get()
+            ->groupBy(fn (Activity $a) => $a->activity_type_id ?? 'none');
+
+        $groups = $activityTypes
+            ->mapWithKeys(fn (ActivityType $type) => [$type->name => $activities->get($type->id, collect())])
+            ->filter(fn ($items) => $items->isNotEmpty());
+
+        if ($unclassified = $activities->get('none')) {
+            $groups['Chưa phân loại'] = $unclassified;
+        }
+
+        $fileName = "hoat-dong-cong-doan-{$academicYear}.xlsx";
+
+        return Excel::download(new UnionActivityReportExport($academicYear, $groups), $fileName);
     }
 
     protected function filteredQuery(Request $request)
@@ -223,7 +262,7 @@ class ActivityController extends Controller
         $this->authorize('delete', $activity);
 
         foreach ($activity->evidences as $evidence) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($evidence->file_path);
+            Storage::disk('public')->delete($evidence->file_path);
         }
 
         // Kế hoạch đã chuyển thành hoạt động này quay lại trạng thái chưa chuyển (Dự kiến / Quá hạn).
