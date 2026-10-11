@@ -64,8 +64,8 @@
                                 @endswitch
                             </p>
                         </div>
-                        <div class="relative" x-data="{ open: false }">
-                            <button @click="open = !open" @click.outside="open = false" class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 font-semibold text-white">
+                        <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+                            <button @click="open = !open" class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 font-semibold text-white">
                                 {{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}
                             </button>
                             <div x-show="open" x-cloak x-transition class="absolute right-0 z-30 mt-2 w-48 rounded-lg border border-slate-200 bg-white py-1 shadow-lg">

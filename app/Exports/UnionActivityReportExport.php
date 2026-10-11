@@ -85,13 +85,14 @@ class UnionActivityReportExport implements FromArray, WithEvents, WithTitle
 
         $row = $headerRow + 1;
         $stt = 1;
+        $groupRows = [];
         foreach ($this->groups as $groupName => $activities) {
             if ($activities->isEmpty()) {
                 continue;
             }
 
+            $groupRows[] = $row;
             $sheet->setCellValue("A{$row}", $groupName);
-            $sheet->getStyle("A{$row}")->getFont()->setBold(true);
             $row++;
 
             foreach ($activities as $activity) {
@@ -114,6 +115,14 @@ class UnionActivityReportExport implements FromArray, WithEvents, WithTitle
         $sheet->getStyle("A{$headerRow}:E{$headerRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $sheet->getStyle('A'.($headerRow + 1).":A{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $sheet->getStyle('D'.($headerRow + 1).":D{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        // Dòng tên nhóm (Loại hoạt động): gộp A:E để tên nhóm có đủ chỗ hiển thị thay vì bị bó hẹp
+        // và xuống dòng trong cột A rộng 6.5 (cột STT) như khi áp định dạng chung ở trên.
+        foreach ($groupRows as $groupRow) {
+            $sheet->mergeCells("A{$groupRow}:E{$groupRow}");
+            $sheet->getStyle("A{$groupRow}")->getFont()->setBold(true)->setSize(14);
+            $sheet->getStyle("A{$groupRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT)->setWrapText(false);
+        }
     }
 
     private function description(Activity $activity): string

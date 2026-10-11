@@ -83,14 +83,14 @@ class UnionActivityReportExportTest extends TestCase
 
         $this->actingAs($officer)->get('/activities')
             ->assertOk()
-            ->assertDontSee('Xuất báo cáo LĐLĐ');
+            ->assertDontSee('Xuất báo cáo');
     }
 
     public function test_admin_sees_union_report_button(): void
     {
         $this->actingAs(User::factory()->admin()->create())->get('/activities')
             ->assertOk()
-            ->assertSee('Xuất báo cáo LĐLĐ');
+            ->assertSee('Xuất báo cáo');
     }
 
     public function test_invalid_academic_year_is_rejected(): void

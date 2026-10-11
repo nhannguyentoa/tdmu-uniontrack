@@ -67,8 +67,8 @@
         <div class="flex gap-2">
             <x-btn href="{{ route('activities.export', request()->query()) }}" variant="secondary">Xuất Excel</x-btn>
             @if($academicYears->isNotEmpty())
-                <div class="relative" x-data="{ open: false }">
-                    <x-btn type="button" variant="secondary" @click="open = !open" @click.outside="open = false">Xuất báo cáo LĐLĐ ▾</x-btn>
+                <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+                    <x-btn type="button" variant="secondary" @click="open = !open">Xuất báo cáo ▾</x-btn>
                     <div x-show="open" x-cloak x-transition class="absolute right-0 z-20 mt-2 w-72 rounded-lg border border-slate-200 bg-white p-3 shadow-lg">
                         <form method="GET" action="{{ route('activities.export.union-report') }}">
                             <label class="text-xs text-slate-500">Năm học</label>
