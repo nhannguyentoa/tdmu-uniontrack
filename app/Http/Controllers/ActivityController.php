@@ -41,7 +41,37 @@ class ActivityController extends Controller
 
         $activities = $this->filteredQuery($request)->get();
 
-        return Excel::download(new ActivitiesExport($activities), 'danh-sach-hoat-dong.xlsx');
+        // Cột/dòng tổ: chỉ tổ đang lọc; nếu không lọc thì mọi tổ đang hoạt động và các tổ có hoạt động trong danh sách.
+        $groups = $request->filled('union_group_id')
+            ? UnionGroup::whereKey($request->integer('union_group_id'))->get()
+            : UnionGroup::where('status', 'active')
+                ->orWhereIn('id', $activities->pluck('union_group_id')->unique())
+                ->orderBy('name')->get();
+
+        $meta = [
+            'exported_at' => now(),
+            'exported_by' => $request->user()->name,
+            'filters' => $this->describeFilters($request),
+        ];
+
+        return Excel::download(new ActivitiesExport($activities, $groups, $meta), 'danh-sach-hoat-dong_'.now()->format('Y-m-d_Hi').'.xlsx');
+    }
+
+    /** Mô tả bộ lọc đang áp dụng để ghi vào file xuất, vd "Tổ: Công đoàn 1 · Trạng thái: Đã hủy". */
+    protected function describeFilters(Request $request): string
+    {
+        $parts = array_filter([
+            $request->filled('search') ? 'Từ khóa: "'.$request->string('search').'"' : null,
+            $request->filled('union_group_id') ? 'Tổ: '.(UnionGroup::find($request->integer('union_group_id'))?->name ?? '?') : null,
+            $request->filled('activity_type_id') ? 'Loại: '.(ActivityType::find($request->integer('activity_type_id'))?->name ?? '?') : null,
+            $request->filled('status') ? 'Trạng thái: '.(Activity::STATUSES[(string) $request->string('status')] ?? $request->string('status')) : null,
+            $request->filled('year') ? 'Năm: '.$request->integer('year') : null,
+            $request->filled('month') ? 'Tháng: '.$request->integer('month') : null,
+            $request->filled('date_from') ? 'Từ ngày: '.$request->date('date_from')?->format('d/m/Y') : null,
+            $request->filled('date_to') ? 'Đến ngày: '.$request->date('date_to')?->format('d/m/Y') : null,
+        ]);
+
+        return $parts === [] ? 'Tất cả' : implode(' · ', $parts);
     }
 
     /**
