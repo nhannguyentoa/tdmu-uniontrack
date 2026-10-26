@@ -5,6 +5,7 @@ namespace App\Exports;
 use App\Models\Activity;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
@@ -12,7 +13,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-class ReportExport implements FromArray, WithHeadings, WithTitle, WithStyles, WithColumnWidths
+class ReportExport implements FromArray, WithHeadings, WithTitle, WithStyles, WithColumnWidths, WithStrictNullComparison
 {
     public function __construct(protected array $report)
     {

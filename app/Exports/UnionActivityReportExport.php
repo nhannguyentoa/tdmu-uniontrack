@@ -6,6 +6,7 @@ use App\Models\Activity;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -17,7 +18,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  * (khối tiêu đề LĐLĐ/CĐCS, gom nhóm theo Loại hoạt động, cột STT/HOẠT ĐỘNG/MÔ TẢ/THỜI GIAN/MINH CHỨNG).
  * Toàn bộ nội dung được ghi trực tiếp trong sự kiện AfterSheet nên FromArray chỉ trả về mảng rỗng.
  */
-class UnionActivityReportExport implements FromArray, WithEvents, WithTitle
+class UnionActivityReportExport implements FromArray, WithEvents, WithTitle, WithStrictNullComparison
 {
     private const FONT = 'Times New Roman';
 
