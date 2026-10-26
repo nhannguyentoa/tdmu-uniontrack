@@ -29,7 +29,7 @@ class UnionGroupFactory extends Factory
             'leader_email' => $this->faker->unique()->safeEmail(),
             'established_date' => $this->faker->dateTimeBetween('-10 years', '-1 year'),
             'status' => 'active',
-            'description' => $this->faker->sentence(12),
+            'description' => 'Tổ công đoàn trực thuộc Công đoàn Cơ sở Trường Đại học Thủ Dầu Một.',
         ];
     }
 }

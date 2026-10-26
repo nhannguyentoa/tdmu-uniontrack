@@ -2,11 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\ActivityType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends Factory<\App\Models\ActivityType>
+ * @extends Factory<ActivityType>
  */
 class ActivityTypeFactory extends Factory
 {
@@ -20,7 +21,7 @@ class ActivityTypeFactory extends Factory
         return [
             'name' => $name,
             'slug' => Str::slug($name).'-'.Str::random(4),
-            'description' => $this->faker->sentence(10),
+            'description' => 'Nhóm các hoạt động thuộc loại: '.$name.'.',
             'is_active' => true,
         ];
     }
