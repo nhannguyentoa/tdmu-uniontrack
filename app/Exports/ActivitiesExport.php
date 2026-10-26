@@ -2,80 +2,41 @@
 
 namespace App\Exports;
 
+use App\Exports\Activities\ActivityAggregator;
+use App\Exports\Activities\ByGroupSheet;
+use App\Exports\Activities\DetailSheet;
+use App\Exports\Activities\MatrixSheet;
+use App\Exports\Activities\NotesSheet;
+use App\Exports\Activities\SummarySheet;
 use App\Models\Activity;
+use App\Models\UnionGroup;
 use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\WithTitle;
-use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\WithColumnWidths;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Style\Border;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use Maatwebsite\Excel\Concerns\Export;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
-class ActivitiesExport implements FromCollection, WithHeadings, WithMapping, WithTitle, WithStyles, WithColumnWidths
+/**
+ * File Excel của nút "Xuất Excel" ở trang Danh sách hoạt động, gồm 5 sheet:
+ * Bảng 2 chiều (hoạt động × tổ), Theo tổ công đoàn, Tổng hợp, Dữ liệu chi tiết và Ghi chú.
+ */
+class ActivitiesExport implements Export, WithMultipleSheets
 {
-    public function __construct(protected Collection $activities)
-    {
-    }
+    /**
+     * @param  Collection<int, Activity>  $activities  các hoạt động đã lọc như trên trang danh sách
+     * @param  Collection<int, UnionGroup>  $groups  các tổ hiển thị, đã sắp theo tên
+     * @param  array{exported_at: \DateTimeInterface, exported_by: string, filters: string}  $meta
+     */
+    public function __construct(protected Collection $activities, protected Collection $groups, protected array $meta) {}
 
-    public function collection(): Collection
+    public function sheets(): array
     {
-        return $this->activities;
-    }
+        $data = new ActivityAggregator($this->activities, $this->groups);
 
-    public function headings(): array
-    {
-        return ['Mã hoạt động', 'Tên hoạt động', 'Tổ công đoàn', 'Loại hoạt động', 'Thời gian bắt đầu', 'Thời gian kết thúc', 'Địa điểm', 'Trạng thái', 'Tiến độ (%)', 'SL dự kiến', 'SL thực tế', 'Điểm thi đua tối đa', 'Điểm thi đua đã đạt'];
-    }
-
-    public function map($activity): array
-    {
         return [
-            $activity->code,
-            $activity->name,
-            $activity->unionGroup?->name,
-            $activity->activityType?->name,
-            $activity->start_time?->format('d/m/Y H:i'),
-            $activity->end_time?->format('d/m/Y H:i'),
-            $activity->location,
-            Activity::STATUSES[$activity->status] ?? $activity->status,
-            $activity->progress,
-            $activity->expected_quantity,
-            $activity->actual_quantity,
-            $activity->counts_for_evaluation ? $activity->evaluation_max_score : '',
-            $activity->counts_for_evaluation ? $activity->earnedEvaluationScore() : '',
-        ];
-    }
-
-    public function title(): string
-    {
-        return 'Danh sách hoạt động';
-    }
-
-    public function styles(Worksheet $sheet): ?array
-    {
-        $lastRow = $sheet->getHighestRow();
-
-        $sheet->getStyle("A1:M{$lastRow}")
-            ->getBorders()->getAllBorders()
-            ->setBorderStyle(Border::BORDER_THIN);
-
-        $sheet->getStyle('A1:M1')->getFont()->setBold(true);
-        $sheet->getStyle('A1:M1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('H2:H'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('I2:M'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-
-        return [];
-    }
-
-    public function columnWidths(): array
-    {
-        return [
-            'A' => 14, 'B' => 30, 'C' => 18, 'D' => 18,
-            'E' => 18, 'F' => 18, 'G' => 22, 'H' => 16,
-            'I' => 12, 'J' => 12, 'K' => 12, 'L' => 16, 'M' => 16,
+            new MatrixSheet($data, $this->meta),
+            new ByGroupSheet($data, $this->meta),
+            new SummarySheet($data, $this->meta),
+            new DetailSheet($data, $this->meta),
+            new NotesSheet($data, $this->meta),
         ];
     }
 }
