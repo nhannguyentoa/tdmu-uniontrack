@@ -27,6 +27,7 @@
             @endif
             <x-btn href="{{ route('members.export', request()->query()) }}" variant="secondary">Xuất Excel</x-btn>
             @can('create', \App\Models\Member::class)
+                <x-btn href="{{ route('members.import') }}" variant="secondary">Nhập từ Excel</x-btn>
                 <x-btn href="{{ route('members.create') }}">+ Thêm đoàn viên</x-btn>
             @endcan
         </div>

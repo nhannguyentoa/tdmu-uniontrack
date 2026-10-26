@@ -12,6 +12,7 @@ use App\Http\Controllers\EvaluationCriterionController;
 use App\Http\Controllers\EvaluationScoreController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MemberEvaluationController;
+use App\Http\Controllers\MemberImportController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ParticipantImportController;
 use App\Http\Controllers\ProfileController;
@@ -44,6 +45,10 @@ Route::middleware('auth')->group(function () {
     // Đoàn viên
     Route::get('members', [MemberController::class, 'index'])->name('members.index');
     Route::get('members/export', [MemberController::class, 'export'])->name('members.export');
+    Route::get('members/import', [MemberImportController::class, 'create'])->name('members.import');
+    Route::get('members/import/template', [MemberImportController::class, 'template'])->name('members.import.template');
+    Route::post('members/import', [MemberImportController::class, 'analyze'])->middleware('throttle:20,1')->name('members.import.analyze');
+    Route::post('members/import/confirm', [MemberImportController::class, 'confirm'])->name('members.import.confirm');
     Route::get('members/create', [MemberController::class, 'create'])->name('members.create');
     Route::post('members', [MemberController::class, 'store'])->name('members.store');
     Route::get('members/{member}', [MemberController::class, 'show'])->name('members.show');
