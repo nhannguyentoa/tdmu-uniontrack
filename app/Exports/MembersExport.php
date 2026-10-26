@@ -2,83 +2,57 @@
 
 namespace App\Exports;
 
+use App\Exports\Members\MemberGroupSheet;
+use App\Exports\Members\MemberSummarySheet;
 use App\Models\Member;
 use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
-use Maatwebsite\Excel\Concerns\WithTitle;
-use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\WithColumnWidths;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Style\Border;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use Maatwebsite\Excel\Concerns\Export;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
-class MembersExport implements FromCollection, WithHeadings, WithMapping, WithTitle, WithStyles, WithColumnWidths, WithStrictNullComparison
+/**
+ * File Excel "Danh sách đoàn viên": mỗi tổ công đoàn một sheet (theo tên tổ A→Z), sheet cuối là "Tổng hợp".
+ * Sheet "Tổng hợp" đặt cuối vì chức năng "Nhập từ Excel" đọc sheet đầu tiên.
+ */
+class MembersExport implements Export, WithMultipleSheets
 {
-    public function __construct(protected Collection $members)
+    /**
+     * @param  Collection<int, Member>  $members  đoàn viên đã lọc, đã nạp sẵn unionGroup
+     * @param  array{exported_at: \DateTimeInterface, exported_by: string, filters: string}  $meta
+     */
+    public function __construct(protected Collection $members, protected array $meta) {}
+
+    public function sheets(): array
     {
-    }
+        $groups = $this->members
+            ->groupBy('union_group_id')
+            ->sortBy(fn (Collection $items) => mb_strtolower($items->first()->unionGroup?->name ?? ''), SORT_NATURAL);
 
-    public function collection(): Collection
-    {
-        return $this->members;
-    }
+        if ($groups->isEmpty()) {
+            return [new MemberGroupSheet('Danh sách đoàn viên', 'DANH SÁCH ĐOÀN VIÊN', collect(), $this->meta,
+                'Không có đoàn viên nào phù hợp bộ lọc · Bộ lọc: '.$this->meta['filters'])];
+        }
 
-    public function headings(): array
-    {
-        return ['Mã đoàn viên', 'Họ và tên', 'Ngày sinh', 'Giới tính', 'Email', 'Số điện thoại', 'Chức vụ', 'Đơn vị', 'Tổ công đoàn', 'Ngày tham gia', 'Trạng thái'];
-    }
+        $used = [mb_strtolower(MemberSummarySheet::TITLE)];
+        $sheets = [];
+        $summary = [];
 
-    public function map($member): array
-    {
-        $genderMap = ['male' => 'Nam', 'female' => 'Nữ', 'other' => 'Khác'];
-        $statusMap = ['active' => 'Đang hoạt động', 'inactive' => 'Ngưng hoạt động', 'transferred' => 'Đã chuyển'];
+        foreach ($groups as $items) {
+            $name = $items->first()->unionGroup?->name ?? 'Chưa có tổ';
+            $title = MemberGroupSheet::safeTitle($name, $used);
+            $sorted = $items->sortBy(fn (Member $m) => mb_strtolower($m->full_name), SORT_NATURAL)->values();
 
-        return [
-            $member->code,
-            $member->full_name,
-            $member->dob?->format('d/m/Y'),
-            $genderMap[$member->gender] ?? '',
-            $member->email,
-            $member->phone,
-            $member->position,
-            $member->department,
-            $member->unionGroup?->name,
-            $member->joined_union_date?->format('d/m/Y'),
-            $statusMap[$member->status] ?? $member->status,
-        ];
-    }
+            $sheets[] = new MemberGroupSheet($title, 'DANH SÁCH ĐOÀN VIÊN – '.mb_strtoupper($name), $sorted, $this->meta);
+            $summary[] = [
+                'name' => $name,
+                'sheet' => $title,
+                'total' => $items->count(),
+                'counts' => collect(array_keys(MemberGroupSheet::STATUSES))
+                    ->mapWithKeys(fn ($s) => [$s => $items->where('status', $s)->count()])->all(),
+            ];
+        }
 
-    public function title(): string
-    {
-        return 'Danh sách đoàn viên';
-    }
+        $sheets[] = new MemberSummarySheet($summary, $this->meta);
 
-    public function styles(Worksheet $sheet): ?array
-    {
-        $lastRow = $sheet->getHighestRow();
-
-        $sheet->getStyle("A1:K{$lastRow}")
-            ->getBorders()->getAllBorders()
-            ->setBorderStyle(Border::BORDER_THIN);
-
-        $sheet->getStyle('A1:K1')->getFont()->setBold(true);
-        $sheet->getStyle('A1:K1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A2:A'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('C2:D'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('J2:K'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-
-        return [];
-    }
-
-    public function columnWidths(): array
-    {
-        return [
-            'A' => 14, 'B' => 26, 'C' => 14, 'D' => 12,
-            'E' => 26, 'F' => 16, 'G' => 18, 'H' => 22,
-            'I' => 20, 'J' => 14, 'K' => 16,
-        ];
+        return $sheets;
     }
 }

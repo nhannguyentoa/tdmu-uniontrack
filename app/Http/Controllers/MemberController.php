@@ -34,7 +34,27 @@ class MemberController extends Controller
 
         $members = $this->filteredQuery($request)->get();
 
-        return Excel::download(new MembersExport($members), 'danh-sach-doan-vien.xlsx');
+        $exportedAt = now('Asia/Ho_Chi_Minh');
+        $meta = [
+            'exported_at' => $exportedAt,
+            'exported_by' => $request->user()->name,
+            'filters' => $this->describeFilters($request),
+        ];
+
+        return Excel::download(new MembersExport($members, $meta), 'danh-sach-doan-vien_'.$exportedAt->format('Y-m-d_Hi').'.xlsx');
+    }
+
+    /** Mô tả bộ lọc đang áp dụng để ghi vào file xuất. */
+    protected function describeFilters(Request $request): string
+    {
+        $statuses = ['active' => 'Đang hoạt động', 'inactive' => 'Ngưng hoạt động', 'transferred' => 'Đã chuyển'];
+        $parts = array_filter([
+            $request->filled('search') ? 'Từ khóa: "'.$request->string('search').'"' : null,
+            $request->filled('union_group_id') ? 'Tổ: '.(UnionGroup::find($request->integer('union_group_id'))?->name ?? '?') : null,
+            $request->filled('status') ? 'Trạng thái: '.($statuses[(string) $request->string('status')] ?? $request->string('status')) : null,
+        ]);
+
+        return $parts === [] ? 'Tất cả' : implode(' · ', $parts);
     }
 
     protected function filteredQuery(Request $request)

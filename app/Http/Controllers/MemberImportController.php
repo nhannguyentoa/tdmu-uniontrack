@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\MembersExport;
+use App\Exports\Members\MemberGroupSheet;
 use App\Models\Member;
 use App\Models\UnionGroup;
 use App\Services\MemberImportService;
@@ -36,7 +36,8 @@ class MemberImportController extends Controller
     {
         $this->authorize('create', Member::class);
 
-        return Excel::download(new MembersExport(collect()), 'mau-nhap-doan-vien.xlsx');
+        return Excel::download(new MemberGroupSheet('Mẫu nhập đoàn viên', 'MẪU NHẬP DANH SÁCH ĐOÀN VIÊN', collect(), [],
+            'Điền từ dòng 5. Chỉ cột Họ và tên là bắt buộc; để trống Mã đoàn viên thì hệ thống tự cấp. Ngày ghi dạng dd/mm/yyyy.'), 'mau-nhap-doan-vien.xlsx');
     }
 
     public function analyze(Request $request): View|RedirectResponse
