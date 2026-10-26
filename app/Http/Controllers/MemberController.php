@@ -34,7 +34,7 @@ class MemberController extends Controller
 
         $members = $this->filteredQuery($request)->get();
 
-        $exportedAt = now('Asia/Ho_Chi_Minh');
+        $exportedAt = now();
         $meta = [
             'exported_at' => $exportedAt,
             'exported_by' => $request->user()->name,

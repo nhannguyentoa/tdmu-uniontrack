@@ -48,8 +48,7 @@ class ActivityController extends Controller
                 ->orWhereIn('id', $activities->pluck('union_group_id')->unique())
                 ->orderBy('name')->get();
 
-        // Giờ xuất hiển thị theo giờ Việt Nam (config app.timezone hiện đang là UTC).
-        $exportedAt = now('Asia/Ho_Chi_Minh');
+        $exportedAt = now();
         $meta = [
             'exported_at' => $exportedAt,
             'exported_by' => $request->user()->name,
